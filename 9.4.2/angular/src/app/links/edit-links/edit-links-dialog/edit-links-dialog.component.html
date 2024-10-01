@@ -1,0 +1,161 @@
+<form
+  #editLinkForm="ngForm"
+  (ngSubmit)="submit(editLinkForm)"
+  autocomplete="off"
+  class="needs-validation"
+  novalidate
+>
+  <abp-modal-header
+    [title]="'Edit Link' | localize"
+    (onCloseClick)="bsModalRef.hide()"
+  ></abp-modal-header>
+
+  <div class="modal-body">
+    <div class="container-fluid">
+      <!-- Link Name and URL Fields -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="linkName" class="form-label">{{ "LinkName" | localize }}</label>
+          <input
+            type="text"
+            class="form-control"
+            id="linkName"
+            name="linkName"
+            [(ngModel)]="linkName"
+            #linkNameCtrl="ngModel"
+            required
+            [ngClass]="{ 'is-invalid': linkNameCtrl.invalid && (linkNameCtrl.touched || linkNameCtrl.dirty) }"
+            placeholder="Enter Link Name"
+          />
+          <div *ngIf="linkNameCtrl.invalid && (linkNameCtrl.touched || linkNameCtrl.dirty)" class="invalid-feedback">
+            Link Name is required.
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="linkUrl" class="form-label">{{ "LinkUrl" | localize }}</label>
+          <input
+            type="url"
+            class="form-control"
+            id="linkUrl"
+            name="url"
+            [(ngModel)]="url"
+            #urlCtrl="ngModel"
+            required
+            pattern="https?://.+"
+            [ngClass]="{ 'is-invalid': urlCtrl.invalid && (urlCtrl.touched || urlCtrl.dirty) }"
+            placeholder="https://example.com"
+          />
+          <div *ngIf="urlCtrl.invalid && (urlCtrl.touched || urlCtrl.dirty)" class="invalid-feedback">
+            A valid URL is required.
+          </div>
+        </div>
+      </div>
+
+      <!-- IsActive Checkbox -->
+      <div class="row">
+        <div class="col-md-6 mb-3 d-flex align-items-center">
+          <input
+            type="checkbox"
+            class="form-check-input me-2"
+            name="isActive"
+            [(ngModel)]="isActive"
+            id="isActive"
+          />
+          <label for="isActive" class="form-check-label">{{ "IsActive" | localize }}</label>
+        </div>
+      </div>
+
+      <!-- Category Dropdown and Countries Multi-Select -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="category" class="form-label">{{ "Category" | localize }}</label>
+          <p-dropdown
+            id="category"
+            [(ngModel)]="categoryId"
+            name="categoryId"
+            [options]="categories"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select a Category"
+            required
+            #categoryIdCtrl="ngModel"
+            [ngClass]="{ 'p-invalid': categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty) }"
+          ></p-dropdown>
+          <div *ngIf="categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty)" class="invalid-feedback d-block">
+            Category selection is required.
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="countries" class="form-label">{{ "Countries" | localize }}</label>
+
+          <!-- Optional: Add filter for better UX -->
+          <!-- Prevent auto-selection -->
+          <!-- Disable if no countries are loaded -->
+          <p-multiSelect
+            id="countries"
+            [(ngModel)]="countries"
+            name="countries"
+            [options]="countriesList"
+            optionLabel="label"
+            optionValue="value"
+            [showToggleAll]="false"
+            placeholder="Select Countries"
+            [filter]="true"
+            [disabled]="countriesList.length === 0"
+          ></p-multiSelect>
+          <div *ngIf="!countriesList.length" class="text-danger">
+            No countries available to select.
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Path and Order Fields -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="imagePath" class="form-label">{{ "Image Path" | localize }}</label>
+          <input
+            type="text"
+            class="form-control"
+            id="imagePath"
+            name="imagePath"
+            [(ngModel)]="imagePath"
+            required
+            [ngClass]="{ 'is-invalid': !imagePath && (editLinkForm.touched || editLinkForm.dirty) }"
+            placeholder="Enter Image Path"
+          />
+          <div *ngIf="!imagePath && (editLinkForm.touched || editLinkForm.dirty)" class="invalid-feedback">
+            Image Path is required.
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="order" class="form-label">{{ "Order" | localize }}</label>
+          <input
+            type="number"
+            class="form-control"
+            id="order"
+            name="order"
+            [(ngModel)]="order"
+            required
+            min="0"
+            [ngClass]="{ 'is-invalid': order < 0 && (editLinkForm.touched || editLinkForm.dirty) }"
+          />
+          <div *ngIf="order < 0 && (editLinkForm.touched || editLinkForm.dirty)" class="invalid-feedback">
+            Order must be a non-negative number.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Footer with Cancel and Save Buttons -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">{{ "Cancel" | localize }}</button>
+    <button type="submit" class="btn btn-primary" [disabled]="saving">
+      <span *ngIf="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      {{ "Save" | localize }}
+    </button>
+  </div>
+</form>

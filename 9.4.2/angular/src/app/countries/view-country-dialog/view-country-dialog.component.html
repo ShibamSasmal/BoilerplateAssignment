@@ -1,0 +1,28 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ countryName }} - Links</h5>
+  <button type="button" class="close" (click)="close()" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+
+<div class="modal-body">
+  <ng-container *ngIf="isLoading; else linksContent">
+    <p>Loading links...</p>
+  </ng-container>
+  
+  <ng-template #linksContent>
+    <ul class="list-group" *ngIf="links.length; else noLinksTemplate">
+      <li class="list-group-item" *ngFor="let link of links">
+        {{ link.linkName }} - <a href="{{ link.url }}" target="_blank">{{ link.url }}</a>
+      </li>
+    </ul>
+    
+    <ng-template #noLinksTemplate>
+      <p>{{ 'No links available for this country.' | localize }}</p>
+    </ng-template>
+  </ng-template>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="close()">Close</button>
+</div>

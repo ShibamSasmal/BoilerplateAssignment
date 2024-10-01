@@ -1,0 +1,82 @@
+<form
+  class="form-horizontal"
+  autocomplete="off"
+  #editCategoryModal="ngForm"
+  (ngSubmit)="save()"
+>
+  <abp-modal-header
+    [title]="'EditCategory' | localize"
+    (onCloseClick)="bsModalRef.hide()"
+  ></abp-modal-header>
+  
+  <div class="modal-body">
+    <tabset>
+      <tab [heading]="'CategoryDetails' | localize" class="pt-3 px-2">
+        <div class="form-group row required">
+          <label class="col-md-3 col-form-label" for="categoryName">
+            {{ "CategoryName" | localize }}
+          </label>
+          <div class="col-md-9">
+            <input
+              type="text"
+              class="form-control"
+              name="categoryName"
+              id="categoryName"
+              required
+              maxlength="100"
+              [(ngModel)]="category.name"  
+              #categoryNameModel="ngModel"
+              #categoryNameEl
+            />
+            <abp-validation-summary
+              [control]="categoryNameModel"
+              [controlEl]="categoryNameEl"
+            ></abp-validation-summary>
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <label class="col-md-3 col-form-label" for="categoryDescription">
+            {{ "CategoryDescription" | localize }}
+          </label>
+          <div class="col-md-9">
+            <textarea
+              class="form-control"
+              name="categoryDescription"
+              id="categoryDescription"
+              [(ngModel)]="category.description"  
+              #categoryDescriptionModel="ngModel"
+            ></textarea>
+            <abp-validation-summary
+              [control]="categoryDescriptionModel"
+            ></abp-validation-summary>
+          </div>
+        </div>
+
+        <div class="form-group row mb-0">
+          <label class="col-md-3 col-form-label">
+            {{ "IsActive" | localize }}
+          </label>
+          <div class="col-md-9">
+            <div class="custom-control custom-checkbox">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                name="isActive"
+                id="isActive"
+                [(ngModel)]="category.isActive"  
+              />
+              <label class="custom-control-label mt-2" for="isActive"></label>
+            </div>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  
+  <abp-modal-footer
+    [cancelDisabled]="saving"
+    [saveDisabled]="!editCategoryModal.form.valid || saving"
+    (onCancelClick)="bsModalRef.hide()"
+  ></abp-modal-footer>
+</form>

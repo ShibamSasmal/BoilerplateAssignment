@@ -1,0 +1,38 @@
+  .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: rgba(0, 123, 255, 0.5); /* Faded blue background */
+    border-color: rgba(0, 123, 255, 0.5); /* Faded blue border */
+  }
+  
+  .custom-control-label::before {
+    background-color: #fff; /* White background for unchecked state */
+    border: 1px solid #ced4da; /* Default border */
+  }
+  
+  .custom-control-input:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Blue shadow on focus */
+  }
+  .btn {
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+    transform: scale(1.05);
+}
+
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.05);
+}

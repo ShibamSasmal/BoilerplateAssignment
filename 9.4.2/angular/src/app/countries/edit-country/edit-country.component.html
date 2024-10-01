@@ -1,0 +1,87 @@
+<form
+  class="form-horizontal"
+  autocomplete="off"
+  #editCountryModal="ngForm"
+  (ngSubmit)="save()"
+>
+  <abp-modal-header
+    [title]="'EditCountry' | localize"
+    (onCloseClick)="bsModalRef.hide()"
+  ></abp-modal-header>
+  
+  <div class="modal-body">
+    <tabset>
+      <tab [heading]="'CountryDetails' | localize" class="pt-3 px-2">
+        <div class="form-group row required">
+          <label class="col-md-3 col-form-label" for="countryName">
+            {{ "CountryName" | localize }}
+          </label>
+          <div class="col-md-9">
+            <input
+              type="text"
+              class="form-control"
+              name="countryName"
+              id="countryName"
+              required
+              maxlength="100"
+              [(ngModel)]="country.countryName"
+              #countryNameModel="ngModel"
+              #countryNameEl
+            />
+            <abp-validation-summary
+              [control]="countryNameModel"
+              [controlEl]="countryNameEl"
+            ></abp-validation-summary>
+          </div>
+        </div>
+
+        <div class="form-group row required">
+          <label class="col-md-3 col-form-label" for="countryCode">
+            {{ "CountryCode" | localize }}
+          </label>
+          <div class="col-md-9">
+            <input
+              type="text"
+              class="form-control"
+              name="countryCode"
+              id="countryCode"
+              required
+              maxlength="3"
+              [(ngModel)]="country.countryCode"
+              #countryCodeModel="ngModel"
+              #countryCodeEl
+            />
+            <abp-validation-summary
+              [control]="countryCodeModel"
+              [controlEl]="countryCodeEl"
+            ></abp-validation-summary>
+          </div>
+        </div>
+
+        <div class="form-group row mb-0">
+          <label class="col-md-3 col-form-label">
+            {{ "IsActive" | localize }}
+          </label>
+          <div class="col-md-9">
+            <div class="custom-control custom-checkbox">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                name="isActive"
+                id="isActive"
+                [(ngModel)]="country.isActive"
+              />
+              <label class="custom-control-label mt-2" for="isActive"></label>
+            </div>
+          </div>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  
+  <abp-modal-footer
+    [cancelDisabled]="saving"
+    [saveDisabled]="!editCountryModal.form.valid || saving"
+    (onCancelClick)="bsModalRef.hide()"
+  ></abp-modal-footer>
+</form>

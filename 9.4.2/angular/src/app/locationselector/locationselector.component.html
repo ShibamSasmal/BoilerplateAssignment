@@ -1,0 +1,28 @@
+<form>
+  <!-- Country Dropdown -->
+  <div>
+    <label for="country">Country</label>
+    <select id="country" [disabled]="countries.length === 0" (change)="onCountrySelect($event.target.value)">
+      <option value="" disabled selected>Select a country</option> 
+      <option *ngFor="let country of countries" [value]="country.id">{{ country.name }}</option> 
+    </select>
+  </div>
+
+  <!-- State Dropdown (disabled until a country is selected) -->
+  <div>
+    <label for="state">State</label>
+    <select id="state" [disabled]="!selectedCountry || states.length === 0" (change)="onStateSelect($event.target.value)">
+      <option value="" disabled selected>Select a state</option> 
+      <option *ngFor="let state of states" [value]="state.id">{{ state.name }}</option> 
+    </select>
+  </div>
+
+  <!-- City Dropdown (disabled until a state is selected) -->
+  <div>
+    <label for="city">City</label>
+    <select id="city" [disabled]="!selectedState || cities.length === 0">
+      <option value="" disabled selected>Select a city</option> <!-- Placeholder option -->
+      <option *ngFor="let city of cities" [value]="city.id">{{ city.name }}</option> <!-- City options -->
+    </select>
+  </div>
+</form>
