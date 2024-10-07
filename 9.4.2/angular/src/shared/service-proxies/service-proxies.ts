@@ -3375,6 +3375,74 @@ export class UserAndLinkMappingServiceProxy {
     }
 
     /**
+     * @param userId (optional) 
+     * @param categoryId (optional) 
+     * @return OK
+     */
+    getActiveLinksForUserAndCategory(userId: number | undefined, categoryId: number | undefined): Observable<UserAndLinkMappingDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/UserAndLinkMapping/GetActiveLinksForUserAndCategory?";
+        if (userId === null)
+            throw new Error("The parameter 'userId' cannot be null.");
+        else if (userId !== undefined)
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        if (categoryId === null)
+            throw new Error("The parameter 'categoryId' cannot be null.");
+        else if (categoryId !== undefined)
+            url_ += "categoryId=" + encodeURIComponent("" + categoryId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetActiveLinksForUserAndCategory(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetActiveLinksForUserAndCategory(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserAndLinkMappingDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserAndLinkMappingDto[]>;
+        }));
+    }
+
+    protected processGetActiveLinksForUserAndCategory(response: HttpResponseBase): Observable<UserAndLinkMappingDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200.push(UserAndLinkMappingDto.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param id (optional) 
      * @return OK
      */
@@ -6172,6 +6240,9 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
     userId: number;
     linkId: number;
     isActive: boolean;
+    categoryName: string | undefined;
+    linkName: string | undefined;
+    linkUrl: string | undefined;
 
     constructor(data?: IUserAndLinkMappingDto) {
         if (data) {
@@ -6189,6 +6260,9 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
             this.userId = _data["userId"];
             this.linkId = _data["linkId"];
             this.isActive = _data["isActive"];
+            this.categoryName = _data["categoryName"];
+            this.linkName = _data["linkName"];
+            this.linkUrl = _data["linkUrl"];
         }
     }
 
@@ -6206,6 +6280,9 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
         data["userId"] = this.userId;
         data["linkId"] = this.linkId;
         data["isActive"] = this.isActive;
+        data["categoryName"] = this.categoryName;
+        data["linkName"] = this.linkName;
+        data["linkUrl"] = this.linkUrl;
         return data;
     }
 
@@ -6223,6 +6300,9 @@ export interface IUserAndLinkMappingDto {
     userId: number;
     linkId: number;
     isActive: boolean;
+    categoryName: string | undefined;
+    linkName: string | undefined;
+    linkUrl: string | undefined;
 }
 
 export class UserAndLinkMappingDtoPagedResultDto implements IUserAndLinkMappingDtoPagedResultDto {

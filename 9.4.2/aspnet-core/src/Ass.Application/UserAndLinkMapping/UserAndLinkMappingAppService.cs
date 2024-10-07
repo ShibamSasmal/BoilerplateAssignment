@@ -87,5 +87,29 @@ namespace Ass.UserAndLinkMapping
             }
 
         }
+
+        public async Task<List<UserAndLinkMappingDto>> GetActiveLinksForUserAndCategory(long userId, int categoryId)
+        {
+            var mappings = await Repository.GetAll()
+                .Include(mapping => mapping.link)   // Include the Link navigation property
+                .Include(mapping => mapping.Category) // Include the Category navigation property
+                .Where(mapping => mapping.UserId == userId
+                                && mapping.CategoryId == categoryId
+                                && mapping.IsActive 
+                                && mapping.link.IsActive
+                                && mapping.Category.IsActive
+                                ) // Only active links
+                .Select(mapping => new UserAndLinkMappingDto
+                {
+                    CategoryId = mapping.CategoryId,
+                    CategoryName = mapping.Category.Name, 
+                    LinkName = mapping.link.LinkName,     
+                    LinkUrl = mapping.link.Url           
+                })
+                .ToListAsync();
+
+            return mappings;
+        }
+
     }
 }

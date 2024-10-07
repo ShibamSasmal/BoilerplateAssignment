@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { CategoryServiceProxy, LinkDto, CategoryDtoPagedResultDto } from '@shared/service-proxies/service-proxies';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CategoryServiceProxy, UserAndLinkMappingServiceProxy, UserAndLinkMappingDto, CategoryDtoPagedResultDto, CategoryDto } from '@shared/service-proxies/service-proxies';
+import { AppSessionService } from '@shared/session/app-session.service'; 
 
 @Component({
   selector: 'app-active-links',
@@ -7,50 +8,59 @@ import { CategoryServiceProxy, LinkDto, CategoryDtoPagedResultDto } from '@share
   styleUrls: ['./active-links.component.css']
 })
 export class ActiveLinksComponent implements OnInit {
-  categories: any[] = []; // Array to hold categories
-  selectedCategoryId: number | null = null; // Currently selected category ID
-  activeLinks: LinkDto[] = []; // Array to hold active links
-  isLoading = true; // Loading state
+  categories: CategoryDto[] = []; 
+  activeLinksByCategory: { [categoryId: number]: UserAndLinkMappingDto[] } = {};
 
-  constructor(private _categoryServiceProxy: CategoryServiceProxy) {}
+  constructor(
+    private linkService: UserAndLinkMappingServiceProxy,
+    private sessionService: AppSessionService,
+    private categoryService: CategoryServiceProxy, 
+    private cdr: ChangeDetectorRef 
+  ) {}
 
   ngOnInit(): void {
-    this.getCategories(); // Fetch categories on initialization
+    this.loadCategories(); 
   }
 
-  // Updated method to fetch categories
-  getCategories(): void {
-    this.isLoading = true;
-    // Call getAll with default parameters
-    this._categoryServiceProxy.getAll('', 0, 100).subscribe(
+  loadCategories() {
+    // Fetch all categories
+    this.categoryService.getAll(undefined, 0, 100).subscribe(
       (result: CategoryDtoPagedResultDto) => {
-        this.categories = result.items; // Assuming the response has an 'items' array with the categories
-        this.isLoading = false;
+        if (result && result.items) {
+          // Filter only active categories
+          this.categories = result.items.filter(category => category.isActive);
+          console.log('Loaded active categories:', this.categories);
+  
+          // Fetch active links for each active category
+          this.categories.forEach(category => {
+            this.loadActiveLinksForCategory(category.id);
+          });
+        } else {
+          console.warn('No categories found in the response.');
+        }
       },
-      (error) => {
+      error => {
         console.error('Error fetching categories:', error);
-        this.isLoading = false;
       }
     );
   }
-
-  onCategoryChange(categoryId: number): void {
-    this.selectedCategoryId = categoryId;
-    // this.getActiveLinksByCategoryId(categoryId);
+  
+ 
+  loadActiveLinksForCategory(categoryId: number): void {
+    const userId = this.sessionService.userId;  
+    if (userId) {
+      this.linkService.getActiveLinksForUserAndCategory(userId, categoryId).subscribe(
+        (activeLinks: UserAndLinkMappingDto[]) => {
+          this.activeLinksByCategory[categoryId] = activeLinks;
+          this.cdr.detectChanges(); // Trigger change detection
+          console.log(`Loaded active links for category ${categoryId}:`, activeLinks);
+        },
+        error => {
+          console.error(`Error fetching active links for category ${categoryId}:`, error);
+        }
+      );
+    } else {
+      console.error('UserId is not available.');
+    }
   }
-
-  // getActiveLinksByCategoryId(categoryId: number): void {
-  //   this.isLoading = true;
-  //   this._categoryServiceProxy.getAllLinksByCategoryId(categoryId).subscribe(
-  //     (result: LinkDto[]) => {
-  //       // Filter to get only active links
-  //       this.activeLinks = result.filter(link => link.isActive); // Assuming LinkDto has an isActive property
-  //       this.isLoading = false;
-  //     },
-  //     (error) => {
-  //       console.error('Error fetching active links:', error);
-  //       this.isLoading = false;
-  //     }
-  //   );
-  // }
 }

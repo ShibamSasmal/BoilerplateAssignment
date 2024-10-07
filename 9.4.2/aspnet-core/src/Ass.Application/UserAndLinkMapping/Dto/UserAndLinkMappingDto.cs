@@ -27,6 +27,10 @@ namespace Ass.UserAndLinkMapping.Dto
         [Required]
         public bool IsActive { get; set; }
 
+        public string CategoryName { get; set; }  
+        public string LinkName { get; set; }      
+        public string LinkUrl { get; set; }
+
         // Removed navigation properties
         // public Category linkCategory { get; set; }
         // public Link link { get; set; }
