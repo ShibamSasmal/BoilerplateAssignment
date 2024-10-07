@@ -71,12 +71,21 @@ namespace Ass.Web.Host.Startup
             }
 
             // URL decode the token if necessary
-            var decodedAuthToken = WebUtility.UrlDecode(qsAuthToken);
+            var decodedAuthToken = WebUtility.UrlDecode(qsAuthToken)?.Replace(" ", "+");
 
             try
             {
+                // Validate Base64 string before decryption
+                var base64Bytes = Convert.FromBase64String(decodedAuthToken);
+
                 // Attempt to decrypt the token
                 context.Token = SimpleStringCipher.Instance.Decrypt(decodedAuthToken);
+            }
+            catch (FormatException ex)
+            {
+                // Log Base64 formatting failure
+                Console.WriteLine($"Token is not valid Base64: {ex.Message}, token: {decodedAuthToken}");
+                return Task.CompletedTask;
             }
             catch (CryptographicException ex)
             {
@@ -87,6 +96,7 @@ namespace Ass.Web.Host.Startup
 
             return Task.CompletedTask;
         }
+
 
     }
 }

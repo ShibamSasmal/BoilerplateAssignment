@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Abp.Runtime.Validation;
 using Abp;
 using Abp.Domain.Entities;
+using Abp.Runtime.Session;
+using Abp.UI;
+using Abp.Authorization;
 
 
 namespace Ass.Links
@@ -20,10 +23,22 @@ namespace Ass.Links
     {
         private readonly IRepository<Ass.Entities.LinkCountryMapping, int> _linkCountryMappingRepository;
         private readonly IRepository<Country, int> _countryRepository;
-        public LinkAppService(IRepository<Link, int> repository, IRepository<Ass.Entities.LinkCountryMapping, int> linkCountryMappingRepository, IRepository<Country, int> countryRepository) : base(repository)
+        private readonly IRepository<Ass.Entities.UserAndLinkMapping, int> _userAndLinkMappingRepository;
+        private readonly IRepository<Category, int> _categoryRepository;
+        private readonly IAbpSession _abpSession;
+        public LinkAppService(
+            IRepository<Link, int> repository,
+            IRepository<Ass.Entities.LinkCountryMapping, int> linkCountryMappingRepository,
+            IRepository<Country, int> countryRepository,
+            IRepository<Ass.Entities.UserAndLinkMapping, int> userAndLinkMappingRepository,
+            IRepository<Category, int> categoryRepository,
+            IAbpSession abpSession) : base(repository)
         {
             _linkCountryMappingRepository = linkCountryMappingRepository;
             _countryRepository = countryRepository;
+            _userAndLinkMappingRepository = userAndLinkMappingRepository;
+            _categoryRepository = categoryRepository;
+            _abpSession = abpSession;
         }
         //first
 
@@ -143,9 +158,13 @@ namespace Ass.Links
                 {
                     throw new AbpValidationException("Link name must be unique.");
                 }
+               
+
+
 
                 // Map CreateLinkDto to Link entity
                 var link = ObjectMapper.Map<Link>(input);
+                //link.CreatorUserId = AbpSession.UserId;
                 link.IsActive = input.IsActive;
 
                 // Insert the Link entity into the repository
@@ -172,7 +191,6 @@ namespace Ass.Links
                         await _linkCountryMappingRepository.InsertAsync(linkCountryMapping);
                     }
                 }
-
                 // Return the mapped LinkDto
                 return MapToEntityDto(link);
             }

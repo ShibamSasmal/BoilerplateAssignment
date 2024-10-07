@@ -13,7 +13,7 @@ import {
 } from '@shared/service-proxies/service-proxies';
 import { CreateCategoryDialogComponent } from './create-category/create-category-dialog/create-category-dialog.component';
 import { EditCategoryDialogComponent } from './edit-category/edit-category-dialog/edit-category-dialog.component';
-
+import {ViewCategoryDialogComponent} from './view-category-dialog/view-category-dialog.component';
 class PagedCategoriesRequestDto extends PagedRequestDto {
   keyword: string = '';  // Default value to avoid undefined issues
   sorting: string | undefined;  // Added sorting property
@@ -40,6 +40,31 @@ export class CategoriesComponent extends PagedListingComponentBase<CategoryDto> 
   }
   toggleIsActiveFilter() {
     this.isFilterOpen = !this.isFilterOpen;
+  }
+
+  viewLinks(categoryId: number, name: string): void {
+    const modalRef: BsModalRef = this._modalService.show(
+      ViewCategoryDialogComponent,
+      {
+        class: 'modal-lg',
+        initialState: {
+          categoryId: categoryId,
+          name: name
+        }
+      }
+    );
+
+    // Subscribe to the onClose EventEmitter
+    modalRef.content.onClose.subscribe(() => {
+      this.refresh();  // Refresh the country list after closing the modal
+    });
+
+    // Subscribe to the errorOccurred EventEmitter
+    modalRef.content.errorOccurred.subscribe((error: any) => {
+      console.error('Error in modal:', error);
+      // Optionally, display an error notification to the user
+      abp.notify.error('An error occurred while fetching links.');
+    });
   }
 
   list(

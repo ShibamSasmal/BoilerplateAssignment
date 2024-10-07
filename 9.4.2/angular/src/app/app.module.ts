@@ -57,7 +57,8 @@ import { CategoryServiceProxy, CountryServiceProxy, LinkServiceProxy, LocationSe
         CountryServiceProxy, 
         CategoryServiceProxy,
         LinkServiceProxy,
-        LocationServiceProxy
+        LocationServiceProxy,
+        
     ]
 })
 export class AppModule {}

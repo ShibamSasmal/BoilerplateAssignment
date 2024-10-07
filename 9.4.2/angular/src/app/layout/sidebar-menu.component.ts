@@ -67,6 +67,12 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
                 'fa fa-flag',
                 // 'Pages.Users'
             ),
+            new MenuItem(
+                this.l('Active Links'),
+                '/app/active-links',
+                'fa fa-external-link'
+                // 'Pages.Users'
+            ),
             new MenuItem(this.l('Countries'), '/app/countries', 'fas fa-globe'),
             new MenuItem(this.l('Links'), '/app/links', 'fa-solid fa-link'),
             new MenuItem(this.l('Locations'), '/app/locationselector', 'fa-solid fa-location-dot'),

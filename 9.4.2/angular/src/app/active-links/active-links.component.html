@@ -1,0 +1,21 @@
+<div class="container">
+    <h3>Select a Category to View Active Links</h3>
+  
+    <div *ngIf="isLoading">Loading categories...</div>
+  
+    <select (change)="onCategoryChange($event.target.value)" [disabled]="isLoading">
+      <option value="">Select a category</option>
+      <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+    </select>
+  
+    <div *ngIf="!isLoading && activeLinks.length === 0 && selectedCategoryId">
+      <p>No active links available for this category.</p>
+    </div>
+  
+    <ul *ngIf="!isLoading && activeLinks.length > 0">
+      <li *ngFor="let link of activeLinks">
+        {{ link.linkName }} - <a href="{{ link.url }}" target="_blank">{{ link.url }}</a>
+      </li>
+    </ul>
+  </div>
+  

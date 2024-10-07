@@ -1,4 +1,10 @@
-import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { 
+  Component, 
+  OnInit, 
+  Output, 
+  EventEmitter, 
+  ChangeDetectorRef 
+} from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { CategoryServiceProxy, LinkServiceProxy, CreateLinkDto, CountryServiceProxy } from '@shared/service-proxies/service-proxies';
 import { finalize } from 'rxjs/operators';
@@ -68,6 +74,7 @@ export class CreateLinkDialogComponent implements OnInit {
       },
       error => {
         console.error('Error fetching countries', error);
+        abp.notify.error('Failed to load countries');
       }
     );
   }
@@ -97,8 +104,8 @@ export class CreateLinkDialogComponent implements OnInit {
       .subscribe(
         () => {
           abp.notify.success('Link created successfully');
-          this.onSave.emit();
-          this.bsModalRef.hide();
+          this.onSave.emit(); // Triggers the parent component to refresh the list
+          this.bsModalRef.hide(); // Closes the modal
         },
         error => {
           console.error('Error creating link', error);

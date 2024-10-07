@@ -77,7 +77,7 @@
             placeholder="Select a Category"
             required
             #categoryIdCtrl="ngModel"
-            [ngClass]="{ 'p-invalid': categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty) }"
+            [ngClass]="{ 'is-invalid': categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty) }"
           ></p-dropdown>
           <div *ngIf="categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty)" class="invalid-feedback d-block">
             Category selection is required.
@@ -96,6 +96,9 @@
             [showToggleAll]="false"
             placeholder="Select Countries"
           ></p-multiSelect>
+          <div *ngIf="countries.length === 0 && createLinkForm.submitted" class="invalid-feedback d-block">
+            At least one country must be selected.
+          </div>
         </div>
       </div>
 
@@ -127,11 +130,11 @@
             [(ngModel)]="order"
             required
             min="0"
-            [ngClass]="{ 'is-invalid': !order && (createLinkForm.touched || createLinkForm.dirty) }"
+            [ngClass]="{ 'is-invalid': order < 0 && (createLinkForm.touched || createLinkForm.dirty) }"
             placeholder="Enter Order"
           />
-          <div *ngIf="!order && (createLinkForm.touched || createLinkForm.dirty)" class="invalid-feedback">
-            Order is required.
+          <div *ngIf="order < 0 && (createLinkForm.touched || createLinkForm.dirty)" class="invalid-feedback">
+            Order must be a positive integer.
           </div>
         </div>
       </div>

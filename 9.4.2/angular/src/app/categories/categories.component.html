@@ -82,7 +82,7 @@
                   <th>{{ "CategoryName" | localize }}</th>
                   <th>{{ "Description" | localize }}</th>
                   <th>{{ "IsActive" | localize }}</th>
-                  <th style="width: 200px;">{{ "Actions" | localize }}</th>
+                  <th style="width: 260px;">{{ "Actions" | localize }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -94,11 +94,15 @@
                       <input type="checkbox" 
                              class="custom-control-input" 
                              id="isActive_{{ category.id }}" 
+                             disabled
                              [(ngModel)]="category.isActive" />
                       <label class="custom-control-label" for="isActive_{{ category.id }}"></label>
                     </div>
                   </td>
                   <td>
+                    <button class="btn btn-primary btn-sm mr-2" (click)="viewLinks(category.id, category.name)">
+                      {{ "View" | localize }}
+                    </button>
                     <button type="button" class="btn btn-sm bg-secondary" (click)="editCategory(category)">
                       <i class="fas fa-pencil-alt"></i>
                       {{ "Edit" | localize }}

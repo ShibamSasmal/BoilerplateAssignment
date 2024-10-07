@@ -48,6 +48,7 @@ import { AppComponent } from './app.component';
                     { path: 'links', loadChildren: () => import('./links/links.module').then(m => m.LinksModule) },
                     { path: 'locationselector', loadChildren: () => import('./locationselector/locationselector.module').then(m => m.LocationSelectorModule) },
                     { path: 'locationselector', loadChildren: () => import('./locationselector/locationselector.module').then(m => m.LocationSelectorModule) },
+                    { path: 'active-links', loadChildren: () => import('./active-links/active-links.module').then(m => m.ActiveLinksModule) },
                 ]
             },
         ])

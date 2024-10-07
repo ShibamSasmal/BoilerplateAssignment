@@ -15,6 +15,7 @@ namespace Ass.EntityFrameworkCore
         public DbSet<Category> Categories { get; set; }
         public DbSet<Link> Links { get; set; }
         public DbSet<LinkCountryMapping> LinkCountryMappings { get; set; }
+        public DbSet<UserAndLinkMapping> userAndLinkMappings { get; set; }
 
 
         //Location Db Context

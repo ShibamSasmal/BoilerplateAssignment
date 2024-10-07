@@ -19,5 +19,6 @@ namespace Ass.Links.Dto
         public int CategoryId { get; set; } // Foreign key
 
         public List<int> Countries { get; set; }
+        public long UserId { get; set; }
     }
 }
