@@ -933,6 +933,78 @@ export class CountryServiceProxy {
 }
 
 @Injectable()
+export class FileServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param file (optional) 
+     * @return OK
+     */
+    uploadImage(file: FileParameter | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/services/app/File/UploadImage";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUploadImage(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUploadImage(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processUploadImage(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+    
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
+@Injectable()
 export class LinkServiceProxy {
     private http: HttpClient;
     private baseUrl: string;
@@ -6243,6 +6315,7 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
     categoryName: string | undefined;
     linkName: string | undefined;
     linkUrl: string | undefined;
+    imageUrl: string | undefined;
 
     constructor(data?: IUserAndLinkMappingDto) {
         if (data) {
@@ -6263,6 +6336,7 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
             this.categoryName = _data["categoryName"];
             this.linkName = _data["linkName"];
             this.linkUrl = _data["linkUrl"];
+            this.imageUrl = _data["imageUrl"];
         }
     }
 
@@ -6283,6 +6357,7 @@ export class UserAndLinkMappingDto implements IUserAndLinkMappingDto {
         data["categoryName"] = this.categoryName;
         data["linkName"] = this.linkName;
         data["linkUrl"] = this.linkUrl;
+        data["imageUrl"] = this.imageUrl;
         return data;
     }
 
@@ -6303,6 +6378,7 @@ export interface IUserAndLinkMappingDto {
     categoryName: string | undefined;
     linkName: string | undefined;
     linkUrl: string | undefined;
+    imageUrl: string | undefined;
 }
 
 export class UserAndLinkMappingDtoPagedResultDto implements IUserAndLinkMappingDtoPagedResultDto {
@@ -6559,6 +6635,11 @@ export interface IUserLoginInfoDto {
     surname: string | undefined;
     userName: string | undefined;
     emailAddress: string | undefined;
+}
+
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }
 
 export class ApiException extends Error {

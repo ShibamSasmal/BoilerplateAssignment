@@ -51,22 +51,11 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-md-6 mb-3 d-flex align-items-center">
-          <input
-            type="checkbox"
-            class="form-check-input me-2"
-            name="isActive"
-            [(ngModel)]="isActive"
-            id="isActive"
-          />
-          <label for="isActive" class="form-check-label">{{ "IsActive" | localize }}</label>
-        </div>
-      </div>
+
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label for="category" class="form-label">{{ "Category" | localize }}</label>
+          <label for="category" class="form-label">{{ "Category" | localize }}</label><br>
           <p-dropdown
             id="category"
             [(ngModel)]="categoryId"
@@ -95,28 +84,28 @@
             optionValue="value"
             [showToggleAll]="false"
             placeholder="Select Countries"
+            [ngClass]="{ 'is-invalid': countries.length === 0 && createLinkForm.submitted }"
           ></p-multiSelect>
           <div *ngIf="countries.length === 0 && createLinkForm.submitted" class="invalid-feedback d-block">
             At least one country must be selected.
           </div>
         </div>
+        
       </div>
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label for="imagePath" class="form-label">{{ "Image Path" | localize }}</label>
+          <label for="imageUpload" class="form-label">{{ "Image Upload" | localize }}</label>
           <input
-            type="text"
+            type="file"
             class="form-control"
-            id="imagePath"
-            name="imagePath"
-            [(ngModel)]="imagePath"
-            required
-            [ngClass]="{ 'is-invalid': !imagePath && (createLinkForm.touched || createLinkForm.dirty) }"
-            placeholder="Enter Image Path"
+            id="imageUpload"
+            (change)="onImageUpload($event)"
+            accept="image/*"
           />
-          <div *ngIf="!imagePath && (createLinkForm.touched || createLinkForm.dirty)" class="invalid-feedback">
-            Image Path is required.
+          <div *ngIf="imagePath" class="mt-2">
+            <!-- <p>Uploaded Image: {{ imagePath }}</p> -->
+            <!-- <img [src]="imagePath" alt="Uploaded Image" width="200" /> -->
           </div>
         </div>
 
@@ -140,7 +129,18 @@
       </div>
     </div>
   </div>
-
+  <div class="row ml-5">
+    <div class="col-md-6 mb-3 d-flex align-items-center">
+      <input
+        type="checkbox"
+        class="form-check-input me-2"
+        name="isActive"
+        [(ngModel)]="isActive"
+        id="isActive"
+      />
+      <label for="isActive" class="form-check-label">{{ "IsActive" | localize }}</label>
+    </div>
+  </div>
   <abp-modal-footer>
     <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">
       {{ "Cancel" | localize }}

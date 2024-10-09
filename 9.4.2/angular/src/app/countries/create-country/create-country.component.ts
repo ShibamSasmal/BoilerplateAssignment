@@ -72,5 +72,8 @@ export class CreateCountryDialogComponent extends AppComponentBase implements On
       }
     );
   }
-  
+  closeForm() {
+    this.bsModalRef.hide(); // Close the modal
+    this.createCountryForm.reset(); // Optionally reset the form
+  }
 }

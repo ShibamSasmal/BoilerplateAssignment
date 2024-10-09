@@ -6,13 +6,13 @@ import {
   ChangeDetectorRef 
 } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { CategoryServiceProxy, LinkServiceProxy, CreateLinkDto, CountryServiceProxy } from '@shared/service-proxies/service-proxies';
+import { CategoryServiceProxy, LinkServiceProxy, CreateLinkDto, CountryServiceProxy, FileServiceProxy, FileParameter } from '@shared/service-proxies/service-proxies';
 import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-create-link-dialog',
   templateUrl: './create-links-dialog.component.html',
-  styleUrls: ['./create-links-dialog.component.css']
+  styleUrls: ['./create-links-dialog.component.css'],
 })
 export class CreateLinkDialogComponent implements OnInit {
   linkName = '';
@@ -21,7 +21,7 @@ export class CreateLinkDialogComponent implements OnInit {
   categoryId: number | null = null;
   countries: number[] = [];
   order: number = 0;
-  imagePath = ''; 
+  imagePath: string | null = null; 
   categories: any[] = [];
   countriesList: any[] = [];
   saving = false;
@@ -33,6 +33,7 @@ export class CreateLinkDialogComponent implements OnInit {
     private _categoryService: CategoryServiceProxy,
     private _linkService: LinkServiceProxy,
     private _countriesService: CountryServiceProxy,
+    private fileAppService: FileServiceProxy,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -115,5 +116,30 @@ export class CreateLinkDialogComponent implements OnInit {
           abp.notify.error('Failed to create link');
         }
       );
+  }
+
+  onImageUpload(event: any): void {
+    const file: File = event.target.files[0];
+
+    if (file) {
+      // Create a FileParameter object from the File
+      const fileParameter: FileParameter = {
+        data: file,
+        fileName: file.name
+      };
+
+      // Call the uploadImage method from the FileAppService
+      this.fileAppService.uploadImage(fileParameter).subscribe(
+        (response: string) => {
+          this.imagePath = response; // Store the returned image path
+          console.log('Image uploaded successfully:', response);
+        },
+        error => {
+          console.error('Error uploading image:', error);
+        }
+      );
+    } else {
+      console.warn('No file selected.');
+    }
   }
 }

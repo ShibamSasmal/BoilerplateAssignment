@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
+using Microsoft.Extensions.Configuration;
 
 namespace Ass.UserAndLinkMapping
 {
@@ -23,13 +24,15 @@ namespace Ass.UserAndLinkMapping
         IUserAndLinkMappingAppService
     {
         private readonly ILogger<UserAndLinkMappingAppService> _logger;
+        private readonly IConfiguration _configuration;
 
         public UserAndLinkMappingAppService(
             IRepository<Ass.Entities.UserAndLinkMapping, int> repository,
-            ILogger<UserAndLinkMappingAppService> logger) // Inject ILogger
+            ILogger<UserAndLinkMappingAppService> logger, IConfiguration configuration) // Inject ILogger
             : base(repository)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         // Method to get User and Link Mappings for a specific User ID and Category ID
@@ -104,7 +107,8 @@ namespace Ass.UserAndLinkMapping
                     CategoryId = mapping.CategoryId,
                     CategoryName = mapping.Category.Name, 
                     LinkName = mapping.link.LinkName,     
-                    LinkUrl = mapping.link.Url           
+                    LinkUrl = mapping.link.Url,
+                    ImageUrl = $"{_configuration["ServerRootAddress"]}/{mapping.link.ImagePath}"
                 })
                 .ToListAsync();
 

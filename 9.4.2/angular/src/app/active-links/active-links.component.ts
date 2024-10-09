@@ -8,9 +8,10 @@ import { AppSessionService } from '@shared/session/app-session.service';
   styleUrls: ['./active-links.component.css']
 })
 export class ActiveLinksComponent implements OnInit {
+  serverRootAddress: string = 'https://localhost:44311/';
   categories: CategoryDto[] = []; 
   activeLinksByCategory: { [categoryId: number]: UserAndLinkMappingDto[] } = {};
-
+  
   constructor(
     private linkService: UserAndLinkMappingServiceProxy,
     private sessionService: AppSessionService,
@@ -51,6 +52,13 @@ export class ActiveLinksComponent implements OnInit {
     if (userId) {
       this.linkService.getActiveLinksForUserAndCategory(userId, categoryId).subscribe(
         (activeLinks: UserAndLinkMappingDto[]) => {
+           // If imageUrl is relative, prepend serverRootAddress
+           activeLinks.forEach(link => {
+            if (link.imageUrl && !link.imageUrl.startsWith('http://') && !link.imageUrl.startsWith('https://')) {
+              link.imageUrl = this.serverRootAddress + link.imageUrl;
+            }
+          });
+
           this.activeLinksByCategory[categoryId] = activeLinks;
           this.cdr.detectChanges(); // Trigger change detection
           console.log(`Loaded active links for category ${categoryId}:`, activeLinks);
@@ -61,6 +69,14 @@ export class ActiveLinksComponent implements OnInit {
       );
     } else {
       console.error('UserId is not available.');
+    }
+  }
+  openLink(url: string): void {
+    console.log('Opening link:', url); 
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      window.open(url, '_blank');
+    } else {
+      console.error('Invalid URL:', url);
     }
   }
 }

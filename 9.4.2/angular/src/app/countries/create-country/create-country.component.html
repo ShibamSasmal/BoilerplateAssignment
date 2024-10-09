@@ -1,6 +1,9 @@
 <form [formGroup]="createCountryForm" (ngSubmit)="save()" class="p-4 bg-light border rounded shadow-sm">
   <h4 class="mb-3">Create Country</h4>
   
+  <button type="button" class="btn btn-close position-absolute" style="top: 15px; right: 15px;" (click)="closeForm()">
+    <i class="fas fa-times"></i>
+  </button>
   <div class="form-group">
     <label for="name" class="font-weight-bold">Country Name</label>
     <input id="name" formControlName="name" class="form-control" placeholder="Enter country name" />
@@ -19,13 +22,20 @@
     </div>
   </div>
 
-  <div class="form-group">
+  <div class="form-group ">
     <label for="isActive" class="font-weight-bold">Is Active</label>
-    <div>
+    <div class="ml-3">
       <input id="isActive" type="checkbox" formControlName="isActive" class="form-check-input" />
       <label class="form-check-label" for="isActive">Active</label>
     </div>
   </div>
 
-  <button type="submit" class="btn btn-primary" [disabled]="saving">Save</button>
+  <abp-modal-footer>
+    <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">
+      {{ "Cancel" | localize }}
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="saving">
+      {{ saving ? "Saving..." : "Create" | localize }}
+    </button>
+  </abp-modal-footer>
 </form>

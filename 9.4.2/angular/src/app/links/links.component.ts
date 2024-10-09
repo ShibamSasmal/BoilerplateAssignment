@@ -28,6 +28,7 @@ class PagedLinksRequestDto extends PagedRequestDto {
   animations: [appModuleAnimation()]
 })
 export class LinksComponent extends PagedListingComponentBase<LinkDto> {
+  serverRootAddress: string = 'https://localhost:44311/';
   links: LinkDto[] = [];
   keyword = '';
   maxResultCount: number = 10;

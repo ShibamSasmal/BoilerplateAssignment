@@ -22,7 +22,7 @@ import { SidebarComponent } from './layout/sidebar.component';
 import { SidebarLogoComponent } from './layout/sidebar-logo.component';
 import { SidebarUserPanelComponent } from './layout/sidebar-user-panel.component';
 import { SidebarMenuComponent } from './layout/sidebar-menu.component';
-import { CategoryServiceProxy, CountryServiceProxy, LinkServiceProxy, LocationServiceProxy, UserAndLinkMappingServiceProxy } from '@shared/service-proxies/service-proxies';
+import { CategoryServiceProxy, CountryServiceProxy, FileServiceProxy, LinkServiceProxy, LocationServiceProxy, UserAndLinkMappingServiceProxy } from '@shared/service-proxies/service-proxies';
 
 @NgModule({
     declarations: [
@@ -58,7 +58,8 @@ import { CategoryServiceProxy, CountryServiceProxy, LinkServiceProxy, LocationSe
         CategoryServiceProxy,
         LinkServiceProxy,
         LocationServiceProxy,
-        UserAndLinkMappingServiceProxy
+        UserAndLinkMappingServiceProxy,
+        FileServiceProxy
         
     ]
 })

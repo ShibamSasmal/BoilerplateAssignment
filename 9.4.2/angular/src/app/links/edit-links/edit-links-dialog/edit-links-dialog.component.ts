@@ -1,9 +1,16 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
-import { CategoryServiceProxy, LinkServiceProxy, LinkDto, CountryServiceProxy } from '@shared/service-proxies/service-proxies';
-import { finalize } from 'rxjs/operators';
+import { 
+  CategoryServiceProxy, 
+  LinkServiceProxy, 
+  LinkDto, 
+  CountryServiceProxy, 
+  FileServiceProxy, 
+  FileParameter
+} from '@shared/service-proxies/service-proxies';
+import { finalize, tap, catchError } from 'rxjs/operators';
 import { forkJoin, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-edit-link-dialog',
@@ -11,7 +18,8 @@ import { tap, catchError } from 'rxjs/operators';
   styleUrls: ['./edit-links-dialog.component.css']
 })
 export class EditLinkDialogComponent implements OnInit {
-  @Input() linkId: number; // Input property to receive the link ID to edit
+  serverRootAddress: string = 'https://localhost:44311/';
+  @Input() linkId: number; 
   linkName = '';
   url = '';
   isActive = true;
@@ -22,6 +30,8 @@ export class EditLinkDialogComponent implements OnInit {
   categories: any[] = [];
   countriesList: any[] = [];
   saving = false;
+  selectedFile: File | null = null;
+  imagePreviewUrl: string | ArrayBuffer | null = null;
 
   @Output() onSave: EventEmitter<any> = new EventEmitter<any>();
 
@@ -30,7 +40,9 @@ export class EditLinkDialogComponent implements OnInit {
     private _categoryService: CategoryServiceProxy,
     private _linkService: LinkServiceProxy,
     private _countriesService: CountryServiceProxy,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fileAppService: FileServiceProxy,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +69,7 @@ export class EditLinkDialogComponent implements OnInit {
             label: category.name,
             value: category.id
           }));
-          console.log('Categories loaded:', this.categories); // Debugging
+          console.log('Categories loaded:', this.categories); 
         } else {
           console.warn('No categories found in the response.');
         }
@@ -78,7 +90,7 @@ export class EditLinkDialogComponent implements OnInit {
             label: country.countryName,
             value: country.id
           }));
-          console.log('Countries loaded:', this.countriesList); // Debugging
+          console.log('Countries loaded:', this.countriesList); 
         } else {
           console.warn('No countries found in the response.');
         }
@@ -119,6 +131,36 @@ export class EditLinkDialogComponent implements OnInit {
     );
   }
 
+  onFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      this.selectedFile = target.files[0];
+      console.log('Selected file:', this.selectedFile); // Debugging
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreviewUrl = e.target?.result;
+        this.cdr.detectChanges(); // Update the view
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  /**
+   * Clears the selected image, reverting the preview to the original image or placeholder.
+   */
+  clearImage(): void {
+    this.selectedFile = null;
+    this.imagePreviewUrl = null;
+    // Optionally, you can also reset the file input element if needed
+    const fileInput = document.getElementById('imageFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    this.cdr.detectChanges(); // Update the view
+    console.log('Image selection cleared'); // Debugging
+  }
+
   submit(form): void {
     if (form.invalid) {
       console.log('Form is invalid:', form);
@@ -127,37 +169,67 @@ export class EditLinkDialogComponent implements OnInit {
 
     this.saving = true;
 
-    // Create an instance of LinkDto
-    const linkDto = new LinkDto();
-    linkDto.id = this.linkId;
-    linkDto.linkName = this.linkName;
-    linkDto.imagePath = this.imagePath;
-    linkDto.url = this.url;
-    linkDto.isActive = this.isActive;
-    linkDto.order = this.order;
-    linkDto.categoryId = this.categoryId;
-    linkDto.countries = this.countries;
-    linkDto.categoryName = ''; // If needed, set this dynamically or fetch it as required
+    // Create a FileParameter from the selected File
+    const fileParam: FileParameter | undefined = this.selectedFile
+      ? { data: this.selectedFile, fileName: this.selectedFile.name }
+      : undefined;
 
-    console.log('Updating link with DTO:', linkDto); // Debugging
+    // Handle image upload if a new image is selected
+    const uploadImage$ = fileParam
+      ? this.fileAppService.uploadImage(fileParam).pipe(
+          catchError(error => {
+            console.error('Error uploading image', error);
+            abp.notify.error('Failed to upload image');
+            return of(null); // Continue even if image upload fails
+          })
+        )
+      : of(null);
 
-    this._linkService.update(linkDto) // Call the updated service proxy method
-      .pipe(finalize(() => {
-        this.saving = false;
-      }))
-      .subscribe(
-        () => {
-          abp.notify.success('Link updated successfully');
-          this.onSave.emit();
-          this.bsModalRef.hide();
-        },
-        error => {
-          console.error('Error updating link', error);
-          if (error.error && error.error.validationErrors) {
-            console.error('Validation errors:', error.error.validationErrors);
-          }
-          abp.notify.error('Failed to update link');
+    uploadImage$
+      .pipe(
+        finalize(() => {
+          this.saving = false;
+        })
+      )
+      .subscribe((imagePath: string | null) => {
+        if (imagePath) {
+          this.imagePath = imagePath; // Update imagePath with the new path
         }
-      );
+
+        // Create an instance of LinkDto
+        const linkDto = new LinkDto();
+        linkDto.id = this.linkId;
+        linkDto.linkName = this.linkName;
+        linkDto.imagePath = this.imagePath;
+        linkDto.url = this.url;
+        linkDto.isActive = this.isActive;
+        linkDto.order = this.order;
+        linkDto.categoryId = this.categoryId;
+        linkDto.countries = this.countries;
+        linkDto.categoryName = ''; 
+
+        console.log('Updating link with DTO:', linkDto); 
+
+        this._linkService.update(linkDto) // Call the updated service proxy method
+          .pipe(
+            finalize(() => {
+              this.saving = false;
+            })
+          )
+          .subscribe(
+            () => {
+              abp.notify.success('Link updated successfully');
+              this.onSave.emit();
+              this.bsModalRef.hide();
+            },
+            error => {
+              console.error('Error updating link', error);
+              if (error.error && error.error.validationErrors) {
+                console.error('Validation errors:', error.error.validationErrors);
+              }
+              abp.notify.error('Failed to update link');
+            }
+          );
+      });
   }
 }

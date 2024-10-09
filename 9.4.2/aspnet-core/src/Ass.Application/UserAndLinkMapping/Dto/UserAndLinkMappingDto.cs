@@ -31,6 +31,8 @@ namespace Ass.UserAndLinkMapping.Dto
         public string LinkName { get; set; }      
         public string LinkUrl { get; set; }
 
+        public string ImageUrl { get; set; }
+
         // Removed navigation properties
         // public Category linkCategory { get; set; }
         // public Link link { get; set; }
