@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Abp.Auditing;
 using Abp.Authorization.Users;
@@ -35,6 +36,11 @@ namespace Ass.Users.Dto
         [StringLength(AbpUserBase.MaxPlainPasswordLength)]
         [DisableAuditing]
         public string Password { get; set; }
+
+
+        public int CountryId { get; set; }
+
+        //public List<int> CountryIds { get; set; }
 
         public void Normalize()
         {

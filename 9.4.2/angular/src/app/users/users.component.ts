@@ -14,6 +14,7 @@ import {
 import { CreateUserDialogComponent } from './create-user/create-user-dialog.component';
 import { EditUserDialogComponent } from './edit-user/edit-user-dialog.component';
 import { ResetPasswordDialogComponent } from './reset-password/reset-password.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 class PagedUsersRequestDto extends PagedRequestDto {
   keyword: string;
@@ -77,10 +78,16 @@ export class UsersComponent extends PagedListingComponentBase<UserDto> {
           finishedCallback();
         })
       )
-      .subscribe((result: UserDtoPagedResultDto) => {
-        this.users = result.items;
-        this.showPaging(result, pageNumber);
-      });
+      .subscribe(
+        (result: UserDtoPagedResultDto) => {
+          this.users = result.items;
+          this.showPaging(result, pageNumber);
+        },
+        (error: HttpErrorResponse) => {
+          this.notify.error(this.l('FailedToLoadUsers'));
+          finishedCallback();
+        }
+      );
   }
 
   protected delete(user: UserDto): void {

@@ -101,6 +101,28 @@
                     ></abp-validation-summary>
                   </div>
                 </div>
+
+
+
+                <div class="form-group row required">
+                  <label class="col-md-3 col-form-label">
+                    {{ "Country" | localize }}
+                  </label>
+                  <div class="col-md-9">
+                    <p-dropdown
+                    [options]="countries"
+                    [(ngModel)]="selectedCountryId" 
+                    name="countries"
+                    placeholder="Select Country"
+                    [optionLabel]="'countryName'"
+                    [optionValue]="'id'"
+                    [disabled]="loadingCountries"
+                  ></p-dropdown>
+                  </div>
+                </div>
+        
+
+
                 <div class="form-group row mb-0">
                   <label class="col-md-3 col-form-label">
                     {{ "IsActive" | localize }}

@@ -12,18 +12,22 @@ import { AppComponentBase } from '@shared/app-component-base';
 import {
   UserServiceProxy,
   CreateUserDto,
-  RoleDto
+  RoleDto,
+  CountryDto,
+  CountryServiceProxy
 } from '@shared/service-proxies/service-proxies';
 import { AbpValidationError } from '@shared/components/validation/abp-validation.api';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   templateUrl: './create-user-dialog.component.html'
 })
-export class CreateUserDialogComponent extends AppComponentBase
-  implements OnInit {
+export class CreateUserDialogComponent extends AppComponentBase implements OnInit {
   saving = false;
   user = new CreateUserDto();
   roles: RoleDto[] = [];
+  countries: CountryDto[] = []; // List of countries
+  selectedCountryId: number | null = null; // Single country selection
   checkedRolesMap: { [key: string]: boolean } = {};
   defaultRoleCheckedStatus = false;
   passwordValidationErrors: Partial<AbpValidationError>[] = [
@@ -41,10 +45,12 @@ export class CreateUserDialogComponent extends AppComponentBase
   ];
 
   @Output() onSave = new EventEmitter<any>();
+  loadingCountries = false;
 
   constructor(
     injector: Injector,
     public _userService: UserServiceProxy,
+    private _countriesService: CountryServiceProxy,
     public bsModalRef: BsModalRef,
     private cd: ChangeDetectorRef
   ) {
@@ -54,11 +60,19 @@ export class CreateUserDialogComponent extends AppComponentBase
   ngOnInit(): void {
     this.user.isActive = true;
 
-    this._userService.getRoles().subscribe((result) => {
-      this.roles = result.items;
-      this.setInitialRolesStatus();
-      this.cd.detectChanges();
-    });
+    this.fetchCountries();
+
+    this._userService.getRoles().subscribe(
+      (result) => {
+        this.roles = result.items;
+        this.setInitialRolesStatus();
+        this.cd.detectChanges();
+      },
+      (error: HttpErrorResponse) => {
+        this.notify.error(this.l('FailedToLoadRoles'));
+        this.cd.detectChanges();
+      }
+    );
   }
 
   setInitialRolesStatus(): void {
@@ -70,18 +84,16 @@ export class CreateUserDialogComponent extends AppComponentBase
   }
 
   isRoleChecked(normalizedName: string): boolean {
-    // just return default role checked status
-    // it's better to use a setting
-    return this.defaultRoleCheckedStatus;
+    return this.defaultRoleCheckedStatus; // Default role checked status
   }
 
-  onRoleChange(role: RoleDto, $event) {
+  onRoleChange(role: RoleDto, $event: any): void {
     this.checkedRolesMap[role.normalizedName] = $event.target.checked;
   }
 
   getCheckedRoles(): string[] {
     const roles: string[] = [];
-    _forEach(this.checkedRolesMap, function (value, key) {
+    _forEach(this.checkedRolesMap, (value, key) => {
       if (value) {
         roles.push(key);
       }
@@ -89,10 +101,27 @@ export class CreateUserDialogComponent extends AppComponentBase
     return roles;
   }
 
+  fetchCountries(): void {
+    this.loadingCountries = true;
+    this._countriesService.getAll(undefined, 0, 1000).subscribe(
+      (result) => {
+        this.countries = result.items; // Populate the countries array
+        this.loadingCountries = false;
+        this.cd.detectChanges();
+      },
+      (error: HttpErrorResponse) => {
+        this.notify.error(this.l('FailedToLoadCountries'));
+        this.loadingCountries = false;
+        this.cd.detectChanges();
+      }
+    );
+  }
+
   save(): void {
     this.saving = true;
 
     this.user.roleNames = this.getCheckedRoles();
+    this.user.countryId = this.selectedCountryId ?? 0; // Assign selected country ID
 
     this._userService.create(this.user).subscribe(
       () => {
@@ -100,7 +129,8 @@ export class CreateUserDialogComponent extends AppComponentBase
         this.bsModalRef.hide();
         this.onSave.emit();
       },
-      () => {
+      (error: HttpErrorResponse) => {
+        this.notify.error(this.l('FailedToSaveUser'));
         this.saving = false;
       }
     );

@@ -18,6 +18,7 @@ using Ass.Authorization;
 using Ass.Authorization.Accounts;
 using Ass.Authorization.Roles;
 using Ass.Authorization.Users;
+using Ass.Entities;
 using Ass.Roles.Dto;
 using Ass.Users.Dto;
 using Microsoft.AspNetCore.Identity;
@@ -34,6 +35,8 @@ namespace Ass.Users
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IAbpSession _abpSession;
         private readonly LogInManager _logInManager;
+        private readonly IRepository<Country, int> _countryRepository;
+        private readonly IRepository<UserCountryMapping, int> _userCountryMappingRepository;
 
         public UserAppService(
             IRepository<User, long> repository,
@@ -42,7 +45,9 @@ namespace Ass.Users
             IRepository<Role> roleRepository,
             IPasswordHasher<User> passwordHasher,
             IAbpSession abpSession,
-            LogInManager logInManager)
+            LogInManager logInManager,
+             IRepository<Country, int> countryRepository,
+            IRepository<UserCountryMapping, int> userCountryMappingRepository)
             : base(repository)
         {
             _userManager = userManager;
@@ -51,48 +56,199 @@ namespace Ass.Users
             _passwordHasher = passwordHasher;
             _abpSession = abpSession;
             _logInManager = logInManager;
+            _countryRepository = countryRepository;
+            _userCountryMappingRepository = userCountryMappingRepository;
         }
 
         public override async Task<UserDto> CreateAsync(CreateUserDto input)
         {
             CheckCreatePermission();
 
+            // Map input to user entity
             var user = ObjectMapper.Map<User>(input);
-
             user.TenantId = AbpSession.TenantId;
             user.IsEmailConfirmed = true;
 
+            // Initialize user options
             await _userManager.InitializeOptionsAsync(AbpSession.TenantId);
-
             CheckErrors(await _userManager.CreateAsync(user, input.Password));
 
+            // Associate country with the user
+            if (input.CountryId > 0)
+            {
+                var country = await _countryRepository.GetAsync(input.CountryId);
+                if (country != null && country.IsActive)
+                {
+                    await _userCountryMappingRepository.InsertAsync(new UserCountryMapping
+                    {
+                        UserId = user.Id,
+                        CountryId = country.Id // Insert into UserCountryMapping
+                    });
+                }
+            }
+
+            // Set roles for the user
             if (input.RoleNames != null)
             {
                 CheckErrors(await _userManager.SetRolesAsync(user, input.RoleNames));
             }
 
-            CurrentUnitOfWork.SaveChanges();
+            // Save changes
+            await CurrentUnitOfWork.SaveChangesAsync();
 
-            return MapToEntityDto(user);
+            // Construct UserDto to return
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Name = user.Name,
+                Surname = user.Surname,
+                EmailAddress = user.EmailAddress,
+                IsActive = user.IsActive,
+                CountryId = input.CountryId, 
+                                             
+            };
+
+            return userDto; 
         }
+
+
+
+        //public override async Task<UserDto> CreateAsync(CreateUserDto input)
+        //{
+        //    CheckCreatePermission();
+
+        //    var user = ObjectMapper.Map<User>(input);
+        //    user.TenantId = AbpSession.TenantId;
+        //    user.IsEmailConfirmed = true;
+
+        //    await _userManager.InitializeOptionsAsync(AbpSession.TenantId);
+        //    CheckErrors(await _userManager.CreateAsync(user, input.Password));
+
+        //    // Associate country with the user (single country)
+        //    if (input.CountryId > 0)
+        //    {
+
+        //        var country = await _countryRepository.GetAsync(input.CountryId);
+        //        if (country != null && country.IsActive)
+        //        {
+
+
+        //            await _userCountryMappingRepository.InsertAsync(new UserCountryMapping
+        //            {
+        //                UserId = user.Id,
+        //                CountryId = country.Id
+        //            });
+        //        }
+        //    }
+
+        //    if (input.RoleNames != null)
+        //    {
+        //        CheckErrors(await _userManager.SetRolesAsync(user, input.RoleNames));
+        //    }
+
+        //    CurrentUnitOfWork.SaveChanges();
+
+        //    return MapToEntityDto(user);
+        //}
+
+
+
+
 
         public override async Task<UserDto> UpdateAsync(UserDto input)
         {
             CheckUpdatePermission();
 
-            var user = await _userManager.GetUserByIdAsync(input.Id);
+            // Get the existing user entity by ID
+            var user = await GetEntityByIdAsync(input.Id);
 
+            // Map the updated values from input to the existing user entity
             MapToEntity(input, user);
 
-            CheckErrors(await _userManager.UpdateAsync(user));
-
-            if (input.RoleNames != null)
+            // Update the country if CountryId is provided
+            if (input.CountryId > 0)
             {
-                CheckErrors(await _userManager.SetRolesAsync(user, input.RoleNames));
+                // Check if the user already has an associated country
+                var existingMapping = await _userCountryMappingRepository
+                    .FirstOrDefaultAsync(ucm => ucm.UserId == user.Id);
+
+                // If there's an existing country mapping, update it
+                if (existingMapping != null)
+                {
+                    existingMapping.CountryId = input.CountryId;
+                }
+                else
+                {
+                    // Otherwise, insert a new country mapping
+                    await _userCountryMappingRepository.InsertAsync(new UserCountryMapping
+                    {
+                        UserId = user.Id,
+                        CountryId = input.CountryId
+                    });
+                }
             }
 
-            return await GetAsync(input);
+            // Save the changes to the user entity and country mapping
+            await CurrentUnitOfWork.SaveChangesAsync();
+
+            // Return the updated UserDto
+            return MapToEntityDto(user);
         }
+
+        public override async Task<PagedResultDto<UserDto>> GetAllAsync(PagedUserResultRequestDto input)
+        {
+            CheckGetAllPermission();
+
+            // Create the filtered query for users
+            var query = CreateFilteredQuery(input);
+
+            // Count total users
+            var totalCount = await AsyncQueryableExecuter.CountAsync(query);
+
+            // Apply sorting and paging
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+
+            // Fetch the user entities
+            var users = await AsyncQueryableExecuter.ToListAsync(query);
+
+            // Create the result list including country information
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                var userDto = MapToEntityDto(user);
+
+                // Get the first country associated with the user
+                var countryInfo = await _userCountryMappingRepository.GetAll()
+                    .Where(ucm => ucm.UserId == user.Id)
+                    .Include(ucm => ucm.Country)
+                    .Select(ucm => new
+                    {
+                        CountryId = ucm.Country.Id,
+                        CountryName = ucm.Country.CountryName
+                    })
+                    .FirstOrDefaultAsync(); // Get only the first country
+
+                // Assign the country information to the userDto
+                if (countryInfo != null)
+                {
+                    userDto.CountryId = countryInfo.CountryId; // Assuming UserDto has a CountryId property
+                    userDto.CountryNames = countryInfo.CountryName; // Assuming UserDto has a CountryNames property
+                }
+
+                userDtos.Add(userDto);
+            }
+
+            // Return paged result with country information included
+            return new PagedResultDto<UserDto>(
+                totalCount,
+                userDtos
+            );
+        }
+
+
+
 
         public override async Task DeleteAsync(EntityDto<long> input)
         {
