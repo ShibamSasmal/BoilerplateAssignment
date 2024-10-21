@@ -213,8 +213,8 @@ export class CategoryServiceProxy {
      * @param userId (optional) 
      * @return OK
      */
-    getAllLinksByCategoryIdAndUserId(categoryId: number | undefined, userId: number | undefined): Observable<LinkDto[]> {
-        let url_ = this.baseUrl + "/api/services/app/Category/GetAllLinksByCategoryIdAndUserId?";
+    getAllLinksByCategoryIdUserIdAndCountryId(categoryId: number | undefined, userId: number | undefined): Observable<LinkDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/Category/GetAllLinksByCategoryIdUserIdAndCountryId?";
         if (categoryId === null)
             throw new Error("The parameter 'categoryId' cannot be null.");
         else if (categoryId !== undefined)
@@ -234,11 +234,11 @@ export class CategoryServiceProxy {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetAllLinksByCategoryIdAndUserId(response_);
+            return this.processGetAllLinksByCategoryIdUserIdAndCountryId(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetAllLinksByCategoryIdAndUserId(response_ as any);
+                    return this.processGetAllLinksByCategoryIdUserIdAndCountryId(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<LinkDto[]>;
                 }
@@ -247,7 +247,7 @@ export class CategoryServiceProxy {
         }));
     }
 
-    protected processGetAllLinksByCategoryIdAndUserId(response: HttpResponseBase): Observable<LinkDto[]> {
+    protected processGetAllLinksByCategoryIdUserIdAndCountryId(response: HttpResponseBase): Observable<LinkDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -267,6 +267,58 @@ export class CategoryServiceProxy {
                 result200 = <any>null;
             }
             return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    updateCategoryOrder(body: CategoryDto[] | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/Category/UpdateCategoryOrder";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateCategoryOrder(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateCategoryOrder(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processUpdateCategoryOrder(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -3975,6 +4027,8 @@ export class CategoryDto implements ICategoryDto {
     name: string | undefined;
     description: string | undefined;
     isActive: boolean;
+    countryId: number;
+    order: number;
 
     constructor(data?: ICategoryDto) {
         if (data) {
@@ -3991,6 +4045,8 @@ export class CategoryDto implements ICategoryDto {
             this.name = _data["name"];
             this.description = _data["description"];
             this.isActive = _data["isActive"];
+            this.countryId = _data["countryId"];
+            this.order = _data["order"];
         }
     }
 
@@ -4007,6 +4063,8 @@ export class CategoryDto implements ICategoryDto {
         data["name"] = this.name;
         data["description"] = this.description;
         data["isActive"] = this.isActive;
+        data["countryId"] = this.countryId;
+        data["order"] = this.order;
         return data;
     }
 
@@ -4023,6 +4081,8 @@ export interface ICategoryDto {
     name: string | undefined;
     description: string | undefined;
     isActive: boolean;
+    countryId: number;
+    order: number;
 }
 
 export class CategoryDtoPagedResultDto implements ICategoryDtoPagedResultDto {
@@ -4437,6 +4497,7 @@ export class CreateCategoryDto implements ICreateCategoryDto {
     name: string | undefined;
     description: string | undefined;
     isActive: boolean;
+    order: number;
 
     constructor(data?: ICreateCategoryDto) {
         if (data) {
@@ -4452,6 +4513,7 @@ export class CreateCategoryDto implements ICreateCategoryDto {
             this.name = _data["name"];
             this.description = _data["description"];
             this.isActive = _data["isActive"];
+            this.order = _data["order"];
         }
     }
 
@@ -4467,6 +4529,7 @@ export class CreateCategoryDto implements ICreateCategoryDto {
         data["name"] = this.name;
         data["description"] = this.description;
         data["isActive"] = this.isActive;
+        data["order"] = this.order;
         return data;
     }
 
@@ -4482,6 +4545,7 @@ export interface ICreateCategoryDto {
     name: string | undefined;
     description: string | undefined;
     isActive: boolean;
+    order: number;
 }
 
 export class CreateCountryDto implements ICreateCountryDto {

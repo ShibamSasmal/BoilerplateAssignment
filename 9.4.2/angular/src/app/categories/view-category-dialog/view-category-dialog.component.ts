@@ -20,14 +20,14 @@ import { AbpSessionService } from 'abp-ng2-module';
   imports: [FormsModule, CommonModule, HttpClientModule, SharedModule],
   templateUrl: './view-category-dialog.component.html',
   styleUrls: ['./view-category-dialog.component.css'],
-  providers: [UserAndLinkMappingServiceProxy] // Add the service here
+  providers: [UserAndLinkMappingServiceProxy]
 })
 export class ViewCategoryDialogComponent implements OnInit {
   @Input() categoryId: number; 
   @Output() onClose: EventEmitter<void> = new EventEmitter(); 
   @Output() errorOccurred: EventEmitter<any> = new EventEmitter(); 
+  @Input() name: string;
 
-  name: string;
   links: LinkDto[] = []; 
   userLinkMappings: UserAndLinkMappingDto[] = [];
   isLoading = true; 
@@ -40,40 +40,6 @@ export class ViewCategoryDialogComponent implements OnInit {
     private cdr: ChangeDetectorRef 
   ) {}
 
-  // ngOnInit(): void {
-  //   if (this.categoryId !== undefined) {
-  //     this.getAllLinksByCategoryId(this.categoryId);
-  //   } else {
-  //     console.error('Category ID is undefined');
-  //     this.isLoading = false; 
-  //     this.cdr.detectChanges(); 
-  //   }
-  // }
-
-  // getAllLinksByCategoryId(categoryId: number): void {
-  //   this.isLoading = true;
-  //   this._categoryServiceProxy.getAllLinksByCategoryId(categoryId) // Corrected here: use categoryId parameter
-  //     .subscribe(
-  //       (result: LinkDto[]) => {
-  //         console.log('Fetched links:', result);
-  //         this.links = result.map(link => {
-  //           const updatedLink = new LinkDto(); // Make sure LinkDto has a constructor that can initialize its properties
-  //           Object.assign(updatedLink, link); // Assign properties correctly
-  //           updatedLink.isActive = false; // Initialize isActive to false
-  //           return updatedLink;
-  //         });
-  //         this.isLoading = false;
-  //         this.cdr.detectChanges(); 
-  //       },
-  //       (error) => {
-  //         this.isLoading = false; 
-  //         console.error('Error fetching links:', error);
-  //         this.errorOccurred.emit(error);
-  //         this.cdr.detectChanges(); 
-  //       }
-  //     );
-  // }
-
   ngOnInit(): void {
     if (this.categoryId !== undefined && this.categoryId !== null) {
       this.getAllLinksByCategoryIdAndUserId(this.categoryId);
@@ -84,20 +50,18 @@ export class ViewCategoryDialogComponent implements OnInit {
     }
   }
 
-getAllLinksByCategoryIdAndUserId(categoryId: number): void {
+  getAllLinksByCategoryIdAndUserId(categoryId: number): void {
     this.isLoading = true;
-    const userId = this.getCurrentUserId(); // Fetch the current user ID
+    const userId = this.getCurrentUserId();
 
-    this._categoryServiceProxy.getAllLinksByCategoryIdAndUserId(categoryId, userId)
+    this._categoryServiceProxy.getAllLinksByCategoryIdUserIdAndCountryId(categoryId, userId)
       .subscribe(
         (result: LinkDto[]) => {
           console.log('Fetched links:', result);
-          this.links = result.map(link => {
-            return {
-              ...link,
-              isActive: link.isActive 
-            } as LinkDto; 
-          });
+          this.links = result.map(link => ({
+            ...link,
+            isActive: link.isActive
+          } as LinkDto));
           this.isLoading = false;
           this.cdr.detectChanges();
         },
@@ -108,8 +72,7 @@ getAllLinksByCategoryIdAndUserId(categoryId: number): void {
           this.cdr.detectChanges();
         }
       );
-}
-
+  }
 
   getUserMappings(): void {
     const userId = this.getCurrentUserId(); 
@@ -132,10 +95,8 @@ getAllLinksByCategoryIdAndUserId(categoryId: number): void {
 
   save(): void {
     const userId = this.getCurrentUserId();
-
     const mappingsToSave: CreateUserAndLinkMappingDto[] = this.links.map(link => {
       const mapping = new CreateUserAndLinkMappingDto();
-      debugger
       mapping.userId = userId;
       mapping.linkId = link.id;
       mapping.categoryId = link.categoryId;
@@ -159,7 +120,7 @@ getAllLinksByCategoryIdAndUserId(categoryId: number): void {
   }
 
   getCurrentUserId(): number {
-    return this.abpSession.userId; // Retrieve the current user ID from AbpSession
+    return this.abpSession.userId;
   }
 
   close(): void {

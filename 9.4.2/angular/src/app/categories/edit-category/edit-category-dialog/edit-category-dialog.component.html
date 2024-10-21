@@ -53,6 +53,30 @@
           </div>
         </div>
 
+
+
+        <div class="form-group row required">
+          <label class="col-md-3 col-form-label" for="categoryOrder">
+            {{ "Order" | localize }}
+          </label>
+          <div class="col-md-9">
+            <input
+              type="number"
+              class="form-control"
+              name="categoryOrder"
+              id="categoryOrder"
+              required
+              [(ngModel)]="category.order"  
+              #categoryOrderModel="ngModel"
+              #categoryOrderEl
+            />
+            <abp-validation-summary
+              [control]="categoryOrderModel"
+              [controlEl]="categoryOrderEl"
+            ></abp-validation-summary>
+          </div>
+        </div>
+
         <div class="form-group row mb-0">
           <label class="col-md-3 col-form-label">
             {{ "IsActive" | localize }}

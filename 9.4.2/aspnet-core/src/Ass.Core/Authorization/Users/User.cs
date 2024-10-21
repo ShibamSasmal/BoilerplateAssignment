@@ -30,5 +30,6 @@ namespace Ass.Authorization.Users
 
             return user;
         }
+        //public int CountryId { get; set; }
     }
 }

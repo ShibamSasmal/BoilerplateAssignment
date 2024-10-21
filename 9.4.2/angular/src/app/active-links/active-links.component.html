@@ -1,30 +1,59 @@
 <div class="container mt-4">
   <h2 class="mb-4">My Links</h2>
 
-  
-  <div *ngFor="let category of categories" class="mb-4">
-    <div class="card">
-      <div class="card-header bg-light text-white">
-        <h3 class="mb-0">{{ category.name }}</h3> 
+  <!-- Row for MultiSelect and AutoComplete -->
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-6">
+      <p-multiSelect 
+        [options]="searchEngines" 
+        [(ngModel)]="selectedSearchEngines" 
+        optionLabel="name" 
+        placeholder="Choose search engines"
+        (onChange)="onSearchEngineChange($event)"
+        display="chip"
+        appendTo="body"
+      ></p-multiSelect>
+    </div>
+
+    <div class="col-md-6">
+      <div class="input-group">
+        <p-autoComplete 
+          [(ngModel)]="searchQuery" 
+          [suggestions]="filteredSuggestions"
+          (completeMethod)="filterSuggestions($event)"
+          [dropdown]="true" 
+          field="name"
+          placeholder="Search something..."
+        ></p-autoComplete>
+        <button class="btn btn-primary" type="button" (click)="performSearch()">
+          <span class="pi pi-search"></span>
+        </button>
       </div>
-      <div class="card-body">
-        <ul class="list-group">
-          <li *ngFor="let link of activeLinksByCategory[category.id]" class="list-group-item">
-            <!-- <a [href]="link.url" class="text-decoration-none" target="_blank"> -->
-              <img 
-              [src]="link.imageUrl" 
-              alt="{{ link.linkName }}" 
-              class="img-thumbnail mr-3" 
-              width="50" 
-              height="50" 
-              *ngIf="link.imageUrl">
+    </div>
+  </div>
+
+  <div cdkDropList class="category-list" (cdkDropListDropped)="drop($event)">
+    <div *ngFor="let category of categories; let i = index" cdkDrag class="mb-4 category-item">
+      <div class="card">
+        <div class="card-header bg-light text-dark d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">{{ category.name }}</h3>
+          <span class="cdk-drag-handle draggable-handle">
+            <i class="pi pi-bars"></i>
+          </span>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            <li *ngFor="let link of activeLinksByCategory[category.id]" class="list-group-item d-flex align-items-center">
+              <img [src]="link.imageUrl" alt="{{ link.linkName }}" class="img-thumbnail mr-3" width="50" height="50" *ngIf="link.imageUrl" />
               <a (click)="openLink(link.linkUrl)" class="text-decoration-none">
-                
-              <strong>{{ link.linkName }}</strong> - <span class="text-muted">{{ link.linkUrl }}</span>
-            </a>
-          </li>
-        </ul>
-        <p *ngIf="!activeLinksByCategory[category.id]?.length" class="text-danger mt-3">No active links available.</p> 
+                <strong>{{ link.linkName }}</strong> - <span class="text-muted">{{ link.linkUrl }}</span>
+              </a>
+            </li>
+          </ul>
+          <p *ngIf="!activeLinksByCategory[category.id]?.length" class="text-danger mt-3">
+            No active links available.
+          </p>
+        </div>
       </div>
     </div>
   </div>

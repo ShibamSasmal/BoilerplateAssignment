@@ -29,6 +29,7 @@ export class CategoriesComponent extends PagedListingComponentBase<CategoryDto> 
   maxResultCount: number = 10; // Set a default value for the maximum results per page
   isActive: boolean | undefined; 
   isFilterOpen: boolean = false; 
+  
 
   constructor(
     injector: Injector,

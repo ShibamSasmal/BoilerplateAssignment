@@ -11,6 +11,6 @@ namespace Ass.Links
 {
     public interface ILinkAppService : IAsyncCrudAppService<LinkDto, int, PagedAndSortedResultRequestDto, CreateLinkDto, LinkDto>
     {
-       
+        
     }
 }

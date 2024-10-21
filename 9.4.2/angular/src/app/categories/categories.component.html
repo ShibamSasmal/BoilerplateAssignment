@@ -81,6 +81,7 @@
                 <tr>
                   <th>{{ "CategoryName" | localize }}</th>
                   <th>{{ "Description" | localize }}</th>
+                  <th>{{ "Order" | localize }}</th>
                   <th>{{ "IsActive" | localize }}</th>
                   <th style="width: 260px;">{{ "Actions" | localize }}</th>
                 </tr>
@@ -89,6 +90,7 @@
                 <tr *ngFor="let category of categories">
                   <td>{{ category.name }}</td>
                   <td>{{ category.description }}</td>
+                  <td>{{ category.order }}</td>
                   <td>
                     <div class="custom-control custom-checkbox d-inline">
                       <input type="checkbox" 
