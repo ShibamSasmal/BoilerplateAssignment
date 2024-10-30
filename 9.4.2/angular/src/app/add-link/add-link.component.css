@@ -1,0 +1,75 @@
+/* Dialog Container Styles */
+.dialog-container {
+    max-width: 600px; /* Set a max width for the dialog */
+    margin: 20px auto; /* Center the dialog on the page */
+    padding: 20px; /* Add padding inside the dialog */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    background-color: #ffffff; /* White background */
+    position: relative; /* Position relative to place the close button */
+  }
+  
+  /* Header Styles */
+  .dialog-header {
+    display: flex;
+    justify-content: flex-end; /* Aligns the close button to the right */
+    margin-bottom: 15px; /* Space between header and form */
+  }
+  
+  .close-button {
+    background: transparent; /* Transparent background */
+    border: none; /* No border */
+    font-size: 24px; /* Icon size */
+    cursor: pointer; /* Pointer cursor on hover */
+    color: #007bff; /* Icon color */
+  }
+  
+  /* Input Styles */
+  input[type="text"],
+  input[type="file"] {
+    width: 100%; 
+    padding: 10px; 
+    margin-bottom: 15px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    font-size: 16px; 
+  }
+  
+  /* Dropdown Styles */
+  p-dropdown {
+    width: 100%; /* Full width for dropdown */
+    margin-bottom: 15px; /* Spacing below the dropdown */
+  }
+  
+  /* Favicon Preview Styles */
+  label {
+    font-weight: bold; 
+    margin-bottom: 5px; 
+  }
+  
+  img {
+    max-width: 50px; 
+    margin-top: 5px; 
+  }
+  
+  /* Button Styles */
+  button {
+    background-color: #007bff; 
+    color: white; 
+    border: none; 
+    padding: 10px 15px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    margin-right: 10px; 
+  }
+  
+  button:hover {
+    background-color: #0056b3; 
+  }
+  
+  button[disabled] {
+    background-color: #ccc; 
+    cursor: not-allowed; 
+  }
+  

@@ -1809,6 +1809,9 @@ namespace Ass.Migrations
                     b.Property<int>("LinkId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 

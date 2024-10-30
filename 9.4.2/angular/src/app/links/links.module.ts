@@ -9,13 +9,16 @@ import { EditLinkDialogComponent } from './edit-links/edit-links-dialog/edit-lin
 import { CreateLinkDialogComponent } from './create-links/create-links-dialog/create-links-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DropdownModule } from 'primeng/dropdown';
-
+import { NgxPaginationModule } from 'ngx-pagination';
+import { PaginatorModule } from 'primeng/paginator';
 @NgModule({
   declarations: [
     LinksComponent,
     EditLinkDialogComponent,
     CreateLinkDialogComponent
 ],
+
+
   imports: [
     CommonModule,
     LinksRoutingModule,
@@ -24,9 +27,15 @@ import { DropdownModule } from 'primeng/dropdown';
     ReactiveFormsModule,
     MultiSelectModule,
     DropdownModule,
+    PaginatorModule,
+    NgxPaginationModule,
+    
+    
+    
     
 
   ],
+ 
   
   // exports: [
   //   ReactiveFormsModule,

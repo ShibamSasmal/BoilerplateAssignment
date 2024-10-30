@@ -12,7 +12,7 @@ import { ListboxModule } from 'primeng/listbox';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { PrimeIcons } from 'primeng/api';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -29,7 +29,8 @@ import { HttpClientModule } from '@angular/common/http';
     ListboxModule,
     AutoCompleteModule,
     MultiSelectModule,
-    HttpClientModule
+    HttpClientModule,
+    HttpClientJsonpModule,
     
     
   ]

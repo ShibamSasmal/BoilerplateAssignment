@@ -1,0 +1,145 @@
+<div class="dialog-container">
+  <form
+    #linkForm="ngForm"
+    (ngSubmit)="submit(linkForm)"
+    autocomplete="off"
+    class="needs-validation form-container"
+    novalidate
+  >
+    <abp-modal-header [title]="'Add New Link'" (onCloseClick)="onCancel()">
+      <button class="close-button" (click)="onCancel()">&times;</button>
+    </abp-modal-header>
+
+    <div class="modal-body">
+      <div class="container-fluid">
+        <!-- URL Input -->
+        <div class="form-group">
+          <label for="url">Website URL</label>
+          <input
+            type="text"
+            id="url"
+            name="url"
+            [(ngModel)]="url"
+            pInputText
+            placeholder="https://example.com"
+            (focusout)="onUrlFocusOut()"
+            required
+            class="form-control"
+          />
+          <div *ngIf="linkForm.controls.url?.invalid && (linkForm.controls.url.touched || linkForm.controls.url.dirty)" class="invalid-feedback">
+            A valid URL is required.
+          </div>
+        </div>
+
+        <!-- Link Name Input -->
+        <div class="form-group">
+          <label for="linkName">Link Name</label>
+          <input
+            type="text"
+            id="linkName"
+            name="linkName"
+            [(ngModel)]="linkName"
+            pInputText
+            placeholder="Short name for link"
+            required
+            class="form-control"
+          />
+          <div *ngIf="linkForm.controls.linkName?.invalid && (linkForm.controls.linkName.touched || linkForm.controls.linkName.dirty)" class="invalid-feedback">
+            Link name is required.
+          </div>
+        </div>
+
+        <!-- Category Dropdown -->
+        <div class="form-group">
+          <label for="categoryId">Category</label><br>
+          <p-dropdown
+            id="category"
+            [(ngModel)]="categoryId"
+            name="categoryId"
+            [options]="categories"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select a Category"
+            required
+            #categoryIdCtrl="ngModel"
+            [ngClass]="{ 'is-invalid': categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty) }"
+          ></p-dropdown>
+          <div *ngIf="categoryIdCtrl.invalid && (categoryIdCtrl.touched || categoryIdCtrl.dirty)" class="invalid-feedback d-block">
+            Category selection is required.
+          </div>
+        </div>
+
+        <!-- Favicon or Uploaded Image Preview -->
+        <div *ngIf="faviconUrl || image" class="form-group">
+          <img [src]="image || faviconUrl" alt="Favicon or Uploaded Image" class="img-thumbnail" />
+        </div>
+
+        <!-- Image Cropper -->
+        <image-cropper
+          [imageChangedEvent]="imageChangedEvent"
+          (imageCropped)="imageCropped($event)"
+          [maintainAspectRatio]="true"
+          format="png"
+          *ngIf="imageChangedEvent || faviconUrl"
+        ></image-cropper>
+
+        <div class="form-group">
+          <label for="imageUpload">Upload Image</label>
+          <input type="file" (change)="onImageUpload($event)" class="form-control" />
+        </div>
+
+        <!-- Countries MultiSelect -->
+        <div class="form-group">
+          <label for="countries">Countries</label><br>
+          <p-multiSelect
+            id="countries"
+            [(ngModel)]="countries"
+            name="countries"
+            [options]="countriesList"
+            optionLabel="label"
+            optionValue="value"
+            [showToggleAll]="false"
+            placeholder="Select Countries"
+          ></p-multiSelect>
+        </div>
+
+        <!-- Order Input
+        <div class="form-group">
+          <label for="order" class="form-label">{{ "Order" | localize }}</label>
+          <input
+            type="number"
+            class="form-control"
+            id="order"
+            name="order"
+            [(ngModel)]="order"
+            required
+            min="0"
+            [ngClass]="{ 'is-invalid': linkForm.controls.order?.invalid && (linkForm.controls.order.touched || linkForm.controls.order.dirty) }"
+            placeholder="Enter Order"
+          />
+          <div *ngIf="linkForm.controls.order?.invalid && (linkForm.controls.order.touched || linkForm.controls.order.dirty)" class="invalid-feedback">
+            Order must be a positive integer.
+          </div>
+        </div> -->
+
+        <!-- Active Checkbox -->
+        <div class="form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            name="isActive"
+            [(ngModel)]="isActive"
+            id="isActive"
+          />
+          <label class="form-check-label" for="isActive">{{ "IsActive" | localize }}</label>
+        </div>
+      </div> <!-- End of container-fluid -->
+    </div> <!-- End of modal-body -->
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="linkForm.invalid">Add Link</button>
+    </div>
+  </form>
+</div>

@@ -24,5 +24,6 @@ namespace Ass.Entities
         public Category Category { get; set; }
         [ForeignKey("LinkId")]
         public Link link { get; set; }
+        public int Order { get; set; }
     }
 }

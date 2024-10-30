@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Abp.Application.Services.Dto;
 using Microsoft.Extensions.Configuration;
+using Abp.Runtime.Validation;
 
 namespace Ass.UserAndLinkMapping
 {
@@ -103,15 +104,20 @@ namespace Ass.UserAndLinkMapping
                                  && mapping.link.IsActive
                                  && mapping.Category.IsActive
                                 ) 
-                .OrderBy(mapping => mapping.Category.order) 
+                .OrderBy(mapping => mapping.Order)
+                //.OrderBy(mapping => mapping.Category.order) 
                 .Select(mapping => new UserAndLinkMappingDto
                 {
                     CategoryId = mapping.CategoryId,
                     CategoryName = mapping.Category.Name,
+                    LinkId = mapping.LinkId,
                     LinkName = mapping.link.LinkName,
                     LinkUrl = mapping.link.Url,
-                   
-                    ImageUrl = $"{_configuration["ServerRootAddress"]}/{mapping.link.ImagePath}"
+                    
+
+
+                    ImageUrl = $"{_configuration["ServerRootAddress"]}/{mapping.link.ImagePath}",
+                    Order = mapping.Order
                 })
                 .ToListAsync();
 
@@ -119,6 +125,60 @@ namespace Ass.UserAndLinkMapping
         }
 
 
+        public async Task UpdateLinkOrder(List<UserAndLinkMappingDto> mappingDtos)
+        {
+            if (mappingDtos == null || !mappingDtos.Any())
+            {
+                throw new AbpValidationException("The link list cannot be null or empty.");
+            }
+
+            // Extract LinkIds and CategoryIds from the DTOs
+            var linkIds = mappingDtos.Select(m => m.LinkId).Distinct().ToList();
+            var categoryIds = mappingDtos.Select(m => m.CategoryId).Distinct().ToList();
+
+            //Console.WriteLine("Link IDs: " + string.Join(", ", linkIds));
+            //Console.WriteLine("Category IDs: " + string.Join(", ", categoryIds));
+
+            using (var unitOfWork = UnitOfWorkManager.Begin())
+            {
+                try
+                {
+                    // Fetch existing mappings from the database
+                    var mappings = await Repository.GetAll()
+                        .Where(mapping => linkIds.Contains(mapping.LinkId) && categoryIds.Contains(mapping.CategoryId))
+                        .ToListAsync();
+
+                    // Check if the number of fetched mappings matches the number of IDs provided
+                    if (mappings.Count != mappingDtos.Count)
+                    {
+                        // Identify any missing link IDs
+                        var missingLinkIds = linkIds.Except(mappings.Select(m => m.LinkId)).ToList();
+                        throw new AbpValidationException(
+                            $"One or more link IDs are invalid: {string.Join(", ", missingLinkIds)}."
+                        );
+                    }
+
+                    // Update order based on the fetched mappings and DTOs
+                    foreach (var mappingDto in mappingDtos)
+                    {
+                        var mapping = mappings.FirstOrDefault(m => m.LinkId == mappingDto.LinkId && m.CategoryId == mappingDto.CategoryId);
+                        if (mapping != null)
+                        {
+                            mapping.Order = mappingDto.Order;
+                            // Update the entity in the repository
+                            await Repository.UpdateAsync(mapping);
+                        }
+                    }
+
+                    // Save changes to the database
+                    await unitOfWork.CompleteAsync();
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("An error occurred while updating link order.", ex);
+                }
+            }
+        }
 
 
 

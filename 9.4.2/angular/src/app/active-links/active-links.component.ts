@@ -1,10 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CategoryServiceProxy, UserAndLinkMappingServiceProxy, UserAndLinkMappingDto, CategoryDtoPagedResultDto, CategoryDto } from '@shared/service-proxies/service-proxies';
+import { CategoryServiceProxy, UserAndLinkMappingServiceProxy, UserAndLinkMappingDto, CategoryDtoPagedResultDto, CategoryDto, LinkDto, LinkServiceProxy } from '@shared/service-proxies/service-proxies';
 import { AppSessionService } from '@shared/session/app-session.service';
 import { MessageService } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { PrimeIcons } from 'primeng/api';
 import { HttpClient } from '@angular/common/http';
+import { CreateLinkDialogComponent } from '@app/links/create-links/create-links-dialog/create-links-dialog.component';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+// import { LinkDialog } from '@app/links/links.component';
+import { AddLinkComponent } from '@app/add-link/add-link.component';
 
 @Component({
   selector: 'app-active-links',
@@ -13,6 +17,7 @@ import { HttpClient } from '@angular/common/http';
   providers: [MessageService]
 })
 export class ActiveLinksComponent implements OnInit {
+  
   serverRootAddress: string = 'https://localhost:44311/';
   categories: CategoryDto[] = [];
   activeLinksByCategory: { [categoryId: number]: UserAndLinkMappingDto[] } = {};
@@ -29,7 +34,9 @@ export class ActiveLinksComponent implements OnInit {
     private sessionService: AppSessionService,
     private categoryService: CategoryServiceProxy,
     private cdr: ChangeDetectorRef,
-    private messageService: MessageService
+    private messageService: MessageService,
+     private _modalService: BsModalService,
+     private _linkserviceProxy : LinkServiceProxy
   ) {}
 
   ngOnInit(): void {
@@ -63,19 +70,29 @@ export class ActiveLinksComponent implements OnInit {
     }
   }
 
-  // Filter suggestions for autocomplete (you can replace this with actual logic)
-  filterSuggestions(event: any) {
-    const query = event.query.toLowerCase();
-    this.filteredSuggestions = this.categories
-      .map(category => category.name)
-      .filter(name => name.toLowerCase().includes(query));
-  }
+  // filterSuggestions(event: any) {
+  //   const query = event.query;
 
+  //   if (query) {
+  //     const url = `https://api.duckduckgo.com/?q=${query}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
 
-
-
-
-
+  //     this.http.get<any>(url).subscribe(
+  //       (response: any) => {
+  //         if (response.RelatedTopics) {
+  //           this.filteredSuggestions = response.RelatedTopics.map((item: any) => item.Text);
+  //         }
+  //       },
+  //       (error: any) => {
+  //         console.error('Error fetching suggestions:', error);
+  //       }
+  //     );
+  //   } else {
+  //     this.filteredSuggestions = [];
+  //   }
+  // }
+  
+  
+  
 
 
 
@@ -118,6 +135,8 @@ export class ActiveLinksComponent implements OnInit {
     );
   }
 
+ 
+
   loadActiveLinksForCategory(categoryId: number): void {
     const userId = this.sessionService.userId;
     if (userId) {
@@ -144,6 +163,45 @@ export class ActiveLinksComponent implements OnInit {
     moveItemInArray(this.categories, event.previousIndex, event.currentIndex);
     this.updateCategoryOrder();
   }
+  dropLink(event: CdkDragDrop<UserAndLinkMappingDto[]>, categoryId: number) {
+    const links = this.activeLinksByCategory[categoryId];
+    if (links) {
+      moveItemInArray(links, event.previousIndex, event.currentIndex);
+      this.updateLinkOrder(categoryId);
+    }
+  }
+  
+
+
+  updateLinkOrder(categoryId: number) {
+    if (!this.activeLinksByCategory[categoryId]) {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No active links found for this category.' });
+        return;
+    }
+
+    const reorderedLinks: UserAndLinkMappingDto[] = this.activeLinksByCategory[categoryId].map((link, index) => {
+        return {
+            id: link.id, 
+            userId: link.userId, 
+            linkId: link.linkId, 
+            categoryId: link.categoryId, 
+            order: index + 1, 
+            isActive: link.isActive 
+           
+        } as UserAndLinkMappingDto; 
+    });
+
+    this.linkService.updateLinkOrder(reorderedLinks).subscribe(
+        () => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Link order updated successfully.' });
+            this.loadActiveLinksForCategory(categoryId); 
+        },
+        error => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update link order.' });
+            console.error('Error updating link order:', error);
+        }
+    );
+}
 
   updateCategoryOrder() {
     const updatedCategories = this.categories.map((category, index) => {
@@ -174,5 +232,42 @@ export class ActiveLinksComponent implements OnInit {
     } else {
       console.error('Invalid URL:', url);
     }
+  }
+
+  // createLinkDialog(): void {
+  //   const createLinkDialog: BsModalRef = this._modalService.show(AddLinkComponent, {
+  //     class: 'modal-lg',
+  //     initialState: {}, // No initial state needed for creating a new link
+  //   });
+
+  //   (createLinkDialog.content as LinkDialog).onSave.subscribe(() => {
+  //     this.refresh();
+  //   });
+  // }
+
+  createLinkDialog(): void {
+    const createLinkDialog: BsModalRef = this._modalService.show(AddLinkComponent, {
+      class: 'modal-lg',
+      initialState: {}, 
+    });
+  
+    const content = createLinkDialog.content as AddLinkComponent;
+  
+    if (content && content.onSave) {
+      content.onSave.subscribe(() => {
+        this.refresh();
+      });
+    } else {
+      console.error('Modal content or onSave event emitter is missing');
+    }
+  }
+  
+  refresh(): void {
+    this.loadCategories(); 
+  }
+
+
+  createLink(): void {
+    this.createLinkDialog();
   }
 }

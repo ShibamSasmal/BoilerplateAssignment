@@ -191,17 +191,17 @@ namespace Ass.Categories
                 // Check if userCountryId is found
                 if (userCountryId == default)
                 {
-                    return new List<LinkDto>(); // Return an empty list if no country is found for the user
+                    return new List<LinkDto>(); 
                 }
 
                 // Fetch links based on CategoryId and LinkCountryMapping for the user's CountryId
                 var links = await _linkRepository.GetAll()
                     .Where(link => link.CategoryId == categoryId)
-                    .Join(_linkcountryMapping.GetAll(), // Join with LinkCountryMapping table
+                    .Join(_linkcountryMapping.GetAll(), 
                         link => link.Id,
                         linkCountryMapping => linkCountryMapping.LinkId,
                         (link, linkCountryMapping) => new { link, linkCountryMapping })
-                    .Where(result => result.linkCountryMapping.CountryId == userCountryId) // Filter by user's CountryId
+                    .Where(result => result.linkCountryMapping.CountryId == userCountryId) 
                     .Select(result => new
                     {
                         result.link.Id,
@@ -223,7 +223,7 @@ namespace Ass.Categories
                     Id = link.Id,
                     LinkName = link.LinkName,
                     Url = link.Url,
-                    IsActive = link.IsUserActive ?? false, // Handle null case with ?? false
+                    IsActive = link.IsUserActive ?? false, 
                     Order = link.Order,
                     ImagePath = link.ImagePath,
                     CategoryId = link.CategoryId

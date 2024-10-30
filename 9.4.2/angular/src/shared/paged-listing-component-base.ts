@@ -44,6 +44,8 @@ export abstract class PagedListingComponentBase<TEntityDto> extends AppComponent
     }
 
     public showPaging(result: PagedResultDto, pageNumber: number): void {
+        this.totalItems = result.totalCount; // Total records from the result
+    this.pageNumber = pageNumber; 
         this.totalPages = ((result.totalCount - (result.totalCount % this.pageSize)) / this.pageSize) + 1;
 
         this.totalItems = result.totalCount;
@@ -51,6 +53,11 @@ export abstract class PagedListingComponentBase<TEntityDto> extends AppComponent
     }
 
     public getDataPage(page: number): void {
+        if (page < 1) {
+            return; // Prevent going to invalid page number
+        }
+    
+        this.pageNumber = page; 
         const req = new PagedRequestDto();
         req.maxResultCount = this.pageSize;
         req.skipCount = (page - 1) * this.pageSize;

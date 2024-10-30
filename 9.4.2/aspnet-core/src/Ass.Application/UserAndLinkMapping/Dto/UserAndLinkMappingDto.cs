@@ -33,6 +33,8 @@ namespace Ass.UserAndLinkMapping.Dto
 
         public string ImageUrl { get; set; }
 
+        public int Order { get; set; }
+
         // Removed navigation properties
         // public Category linkCategory { get; set; }
         // public Link link { get; set; }

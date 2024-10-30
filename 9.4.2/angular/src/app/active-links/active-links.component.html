@@ -1,6 +1,22 @@
 <div class="container mt-4">
   <h2 class="mb-4">My Links</h2>
 
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-6">
+          
+        </div>
+        <div class="col-6 text-right">
+          <a href="javascript:;" class="btn bg-blue" (click)="createLink()">
+            <i class="fa fa-plus-square"></i>
+            {{ "Create" | localize }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Row for MultiSelect and AutoComplete -->
   <div class="row mb-3 align-items-center">
     <div class="col-md-6">
@@ -20,14 +36,14 @@
         <p-autoComplete 
           [(ngModel)]="searchQuery" 
           [suggestions]="filteredSuggestions"
-          (completeMethod)="filterSuggestions($event)"
-          [dropdown]="true" 
+
           field="name"
           placeholder="Search something..."
         ></p-autoComplete>
-        <button class="btn btn-primary" type="button" (click)="performSearch()">
-          <span class="pi pi-search"></span>
+        <button class="btn btn-primary ml-1" type="button" (click)="performSearch()">
+          <i class="pi pi-search"></i>
         </button>
+       
       </div>
     </div>
   </div>
@@ -38,12 +54,11 @@
         <div class="card-header bg-light text-dark d-flex justify-content-between align-items-center">
           <h3 class="mb-0">{{ category.name }}</h3>
           <span class="cdk-drag-handle draggable-handle">
-            <i class="pi pi-bars"></i>
           </span>
         </div>
         <div class="card-body">
-          <ul class="list-group">
-            <li *ngFor="let link of activeLinksByCategory[category.id]" class="list-group-item d-flex align-items-center">
+          <ul class="list-group" cdkDropList (cdkDropListDropped)="dropLink($event, category.id)">
+            <li *ngFor="let link of activeLinksByCategory[category.id]; let j = index" cdkDrag class="list-group-item d-flex align-items-center">
               <img [src]="link.imageUrl" alt="{{ link.linkName }}" class="img-thumbnail mr-3" width="50" height="50" *ngIf="link.imageUrl" />
               <a (click)="openLink(link.linkUrl)" class="text-decoration-none">
                 <strong>{{ link.linkName }}</strong> - <span class="text-muted">{{ link.linkUrl }}</span>
@@ -57,4 +72,5 @@
       </div>
     </div>
   </div>
+  
 </div>

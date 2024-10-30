@@ -18,6 +18,9 @@ using Abp.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
+using Ass.Icons;
+using Ass.Categories.Dto;
+using Ass.UserAndLinkMapping.Dto;
 
 
 
@@ -30,8 +33,10 @@ namespace Ass.Links
         private readonly IRepository<Ass.Entities.UserAndLinkMapping, int> _userAndLinkMappingRepository;
         private readonly IRepository<Category, int> _categoryRepository;
         private readonly IAbpSession _abpSession;
+        private readonly IFaviconService _faviconService;
         public LinkAppService(
             IRepository<Link, int> repository,
+            IFaviconService faviconService,
             IRepository<Ass.Entities.LinkCountryMapping, int> linkCountryMappingRepository,
             IRepository<Country, int> countryRepository,
             IRepository<Ass.Entities.UserAndLinkMapping, int> userAndLinkMappingRepository,
@@ -43,101 +48,9 @@ namespace Ass.Links
             _userAndLinkMappingRepository = userAndLinkMappingRepository;
             _categoryRepository = categoryRepository;
             _abpSession = abpSession;
+            _faviconService = faviconService;
         }
-        //first
-
-        //public override async Task<LinkDto> CreateAsync(CreateLinkDto input)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrWhiteSpace(input.LinkName))
-        //        {
-        //            throw new AbpValidationException("Link name is required.");
-        //        }
-
-        //        var existingLink = await Repository.FirstOrDefaultAsync(l => l.LinkName == input.LinkName);
-        //        if (existingLink != null)
-        //        {
-        //            throw new AbpValidationException("Link name must be unique.");
-        //        }
-
-        //        var link = ObjectMapper.Map<Link>(input);
-        //        link.IsActive = input.IsActive;
-
-        //        await Repository.InsertAsync(link);
-
-        //        return MapToEntityDto(link);
-        //    }
-        //    catch (AbpValidationException vex)
-        //    {
-        //        // Log specific validation errors
-        //        Logger.Error("Validation error: " + vex.Message);
-        //        throw;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log general errors
-        //        Logger.Error("An unexpected error occurred: " + ex.Message, ex);
-        //        throw new AbpException("An error occurred while creating the link.", ex);
-        //    }
-        //}
-
-        //second
-
-        //public override async Task<LinkDto> CreateAsync(CreateLinkDto input)
-        //{
-        //    try
-        //    {
-        //        // Validate the link name
-        //        if (string.IsNullOrWhiteSpace(input.LinkName))
-        //        {
-        //            throw new AbpValidationException("Link name is required.");
-        //        }
-
-        //        // Check for uniqueness of the link name
-        //        var existingLink = await Repository.FirstOrDefaultAsync(l => l.LinkName == input.LinkName);
-        //        if (existingLink != null)
-        //        {
-        //            throw new AbpValidationException("Link name must be unique.");
-        //        }
-
-        //        // Map CreateLinkDto to Link entity
-        //        var link = ObjectMapper.Map<Link>(input);
-        //        link.IsActive = input.IsActive;
-
-        //        // Insert the Link entity into the repository
-        //        await Repository.InsertAsync(link);
-
-        //        // Now create the LinkCountryMapping entries
-        //        if (input.Countries != null && input.Countries.Any())
-        //        {
-        //            foreach (var countryId in input.Countries)
-        //            {
-        //                var linkCountryMapping = new Ass.Entities.LinkCountryMapping // Fully qualified
-        //                {
-        //                    LinkId = link.Id, // Set the LinkId to the newly created link's Id
-        //                    CountryId = countryId
-        //                };
-
-        //                // Insert the mapping into the LinkCountryMapping repository
-        //                await _linkCountryMappingRepository.InsertAsync(linkCountryMapping);
-        //            }
-        //        }
-
-        //        // Return the mapped LinkDto
-        //        return MapToEntityDto(link);
-        //    }
-        //    catch (AbpValidationException vex)
-        //    {
-        //        Logger.Error("Validation error: " + vex.Message);
-        //        throw;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.Error("An unexpected error occurred: " + ex.Message, ex);
-        //        throw new AbpException("An error occurred while creating the link.", ex);
-        //    }
-        //}
+      
 
 
         public override async Task<LinkDto> CreateAsync(CreateLinkDto input)
@@ -162,7 +75,12 @@ namespace Ass.Links
                 {
                     throw new AbpValidationException("Link name must be unique.");
                 }
-               
+                //Download the favicon and get the path
+                if (!string.IsNullOrWhiteSpace(input.Url))
+                {
+                    input.ImagePath = await _faviconService.DownloadFaviconAsync(input.Url);
+                }
+
 
 
 
@@ -259,34 +177,10 @@ namespace Ass.Links
                 }
             }
 
-            return new PagedResultDto<LinkDto>(totalCount, linkDtos);
+            return new PagedResultDto<LinkDto>(totalCount, linkDtos); 
+
+            //return new PagedResultDto<LinkDto>(totalCount, ObjectMapper.Map<List<LinkDto>>(links));
         }
-
-
-
-
-
-
-        //public override async Task<PagedResultDto<LinkDto>> GetAllAsync(PagedAndSortedResultRequestDto input)
-        //{
-        //    var query = Repository.GetAllIncluding(link => link.Category); // Include Category
-
-        //    // Optionally apply sorting and filtering based on input here
-
-        //    var totalCount = await query.CountAsync();
-        //    var links = await query.OrderBy(link => link.Order) // Adjust sorting as needed
-        //                           .Skip(input.SkipCount)
-        //                           .Take(input.MaxResultCount)
-        //                           .ToListAsync();
-
-        //    var linkDtos = ObjectMapper.Map<List<LinkDto>>(links);
-
-        //    return new PagedResultDto<LinkDto>(totalCount, linkDtos);
-        //}
-
-
-
-        // Override GetAsync to include country IDs and names
         public override async Task<LinkDto> GetAsync(EntityDto<int> input)
         {
             try
@@ -324,74 +218,7 @@ namespace Ass.Links
             }
         }
 
-        //public override async Task<LinkDto> UpdateAsync(LinkDto input)
-        //{
-        //    try
-        //    {
-        //        // Validate the input
-        //        if (input == null)
-        //        {
-        //            throw new AbpValidationException("Input cannot be null.");
-        //        }
-
-        //        // Validate the link name
-        //        if (string.IsNullOrWhiteSpace(input.LinkName))
-        //        {
-        //            throw new AbpValidationException("Link name is required.");
-        //        }
-
-        //        // Retrieve the existing link
-        //        var existingLink = await Repository.GetAsync(input.Id);
-        //        if (existingLink == null)
-        //        {
-        //            throw new AbpValidationException("Link does not exist.");
-        //        }
-
-        //        // Map the updated values to the existing link
-        //        ObjectMapper.Map(input, existingLink);
-
-        //        // Update the Link entity in the repository
-        //        await Repository.UpdateAsync(existingLink);
-
-        //        // Update the LinkCountryMapping entries
-        //        if (input.Countries != null)
-        //        {
-        //            // Remove existing country mappings
-        //            var existingMappings = await _linkCountryMappingRepository.GetAllListAsync(m => m.LinkId == existingLink.Id);
-        //            foreach (var mapping in existingMappings)
-        //            {
-        //                await _linkCountryMappingRepository.DeleteAsync(mapping);
-        //            }
-
-        //            // Insert new country mappings
-        //            foreach (var countryId in input.Countries)
-        //            {
-        //                var linkCountryMapping = new Ass.Entities.LinkCountryMapping
-        //                {
-        //                    LinkId = existingLink.Id,
-        //                    CountryId = countryId
-        //                };
-
-        //                await _linkCountryMappingRepository.InsertAsync(linkCountryMapping);
-        //            }
-        //        }
-
-        //        // Return the updated LinkDto
-        //        return MapToEntityDto(existingLink);
-        //    }
-        //    catch (AbpValidationException vex)
-        //    {
-        //        Logger.Error("Validation error: " + vex.Message);
-        //        throw;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Logger.Error("An unexpected error occurred: " + ex.Message, ex);
-        //        throw new AbpException("An error occurred while updating the link.", ex);
-        //    }
-        //}
-
-        // Implement the UpdateAsync method
+        
         public override async Task<LinkDto> UpdateAsync(LinkDto input)
         {
             try
@@ -505,6 +332,5 @@ namespace Ass.Links
                 throw new AbpException("An error occurred while updating the link.", ex);
             }
         }
-
     }
 }

@@ -51,6 +51,7 @@ import { AppComponent } from './app.component';
                     { path: 'active-links', loadChildren: () => import('./active-links/active-links.module').then(m => m.ActiveLinksModule) },
                 ]
             },
+            { path: 'add-link', loadChildren: () => import('./add-link/add-link.module').then(m => m.AddLinkModule) },
         ])
     ],
     exports: [RouterModule]
