@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CategoryServiceProxy, UserAndLinkMappingServiceProxy, UserAndLinkMappingDto, CategoryDtoPagedResultDto, CategoryDto, LinkDto, LinkServiceProxy } from '@shared/service-proxies/service-proxies';
+import { CategoryServiceProxy, UserAndLinkMappingServiceProxy, UserAndLinkMappingDto, CategoryDtoPagedResultDto, CategoryDto, LinkDto, LinkServiceProxy, DashboardNoteServiceProxy, CreateDashboardNoteDetailDto } from '@shared/service-proxies/service-proxies';
 import { AppSessionService } from '@shared/session/app-session.service';
 import { MessageService } from 'primeng/api';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -28,6 +28,7 @@ export class ActiveLinksComponent implements OnInit {
   searchQuery: string = ''; // The user's search term
   filteredSuggestions: string[] = []; // Filtered suggestions for autocomplete
   private lastSelectedSearchEngines: any[] = []; 
+  text: string | undefined;
   constructor(
     private http: HttpClient,
     private linkService: UserAndLinkMappingServiceProxy,
@@ -36,10 +37,12 @@ export class ActiveLinksComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private messageService: MessageService,
      private _modalService: BsModalService,
-     private _linkserviceProxy : LinkServiceProxy
+     private _linkserviceProxy : LinkServiceProxy,
+     private _DashboardNoteService : DashboardNoteServiceProxy
   ) {}
 
   ngOnInit(): void {
+    this.loadUserNotes(),
     this.loadCategories();
     this.initializeSearchEngines();
     this.selectedSearchEngines = [this.searchEngines[0]]; 
@@ -109,9 +112,45 @@ export class ActiveLinksComponent implements OnInit {
     });
   }
 
+  loadUserNotes() {
+    const userId = this.sessionService.userId;
+    if (userId) {
+      this._DashboardNoteService.getNotesByUserId(userId).subscribe(notes => {
+        if (notes && notes.length > 0) {
+          this.text = notes[notes.length-1].htmlContent;
+        }
+      }, error => {
+        console.error('Error loading notes:', error);
+      });
+    } else {
+      console.error('User ID not found in session.');
+    }
+  }
 
-  
-  
+  saveNote() {
+    // debugger
+    
+    console.log("savenoteCalled")
+    const userId = this.sessionService.userId;
+    if (userId) {
+      
+      const noteDetail = new CreateDashboardNoteDetailDto();
+      noteDetail.userId = userId;
+      noteDetail.htmlContent = this.text;
+
+      this._DashboardNoteService.create(noteDetail).subscribe(
+        response => {
+          console.log('Note saved successfully!', response);
+        },
+        error => {
+          console.error('Error saving note:', error);
+        }
+      );
+    } else {
+      console.error('User ID not found in session.');
+    }
+}
+
   
   
   
@@ -270,4 +309,7 @@ export class ActiveLinksComponent implements OnInit {
   createLink(): void {
     this.createLinkDialog();
   }
+
+
+
 }

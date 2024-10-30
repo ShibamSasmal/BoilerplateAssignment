@@ -43,6 +43,7 @@
             <table class="table table-striped table-bordered" [busy]="isTableLoading">
               <thead class="bg-light">
                 <tr>
+                  <th>Country Flag</th>
                   <th>{{ "CountryName" | localize }}</th>
                   <th>{{ "CountryCode" | localize }}</th>
                   <th>Is Active</th>
@@ -51,6 +52,16 @@
               </thead>
               <tbody>
                 <tr *ngFor="let country of countries">
+                  <td>
+                    <img
+                      *ngIf="country.countryCode"
+                      [src]="'https://flagcdn.com/24x18/' + country.countryCode.toLowerCase() + '.png'"
+                      alt="{{ country.countryName }} Flag"
+                      width="24"
+                      height="18"
+                      (error)="flagError($event)"
+                    />
+                  </td>
                   <td>{{ country.countryName }}</td>
                   <td>{{ country.countryCode }}</td>
                   <td>

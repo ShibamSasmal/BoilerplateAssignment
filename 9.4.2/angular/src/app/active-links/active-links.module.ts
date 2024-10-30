@@ -13,8 +13,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { PrimeIcons } from 'primeng/api';
 import { HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
-
-
+import { EditorModule } from 'primeng/editor';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 @NgModule({
   declarations: [
     ActiveLinksComponent
@@ -31,6 +31,8 @@ import { HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
     MultiSelectModule,
     HttpClientModule,
     HttpClientJsonpModule,
+    EditorModule,
+    InputTextareaModule
     
     
   ]

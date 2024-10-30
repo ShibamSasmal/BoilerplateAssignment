@@ -160,4 +160,9 @@ export class CountriesComponent extends PagedListingComponentBase<CountryDto> {
   searchCountries(): void {
     this.getDataPage(1); // Get the first page of results
   }
+
+  //show the default image if the country flag fetch issue
+  flagError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/placeholder.png'; 
+  }
 }

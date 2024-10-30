@@ -48,6 +48,16 @@
     </div>
   </div>
 
+  <div>
+    <h3>Notepad</h3>
+      <div class="card" >
+        <!-- <p-editor [(ngModel)]="text" [style]="{ height: '320px' }" (focusout)="saveNote()"/> -->
+        <p-editor [(ngModel)]="text" [style]="{ height: '320px' }" (onSelectionChange)="saveNote()" /> 
+        <!-- <button (click)="saveNote()">Save Note</button> -->
+    </div>
+  </div>
+
+
   <div cdkDropList class="category-list" (cdkDropListDropped)="drop($event)">
     <div *ngFor="let category of categories; let i = index" cdkDrag class="mb-4 category-item">
       <div class="card">
